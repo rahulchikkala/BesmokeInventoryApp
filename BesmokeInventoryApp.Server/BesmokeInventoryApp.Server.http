@@ -1,0 +1,6 @@
+@BesmokeInventoryApp.Server_HostAddress = http://localhost:5271
+
+GET {{BesmokeInventoryApp.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

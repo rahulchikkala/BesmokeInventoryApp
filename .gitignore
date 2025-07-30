@@ -1,0 +1,18 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build results
+bin/
+obj/
+
+# Frontend dependencies
+ClientApp/node_modules/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
