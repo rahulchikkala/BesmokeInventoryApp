@@ -20,6 +20,10 @@ namespace BesmokeInventoryApp.Server.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             return await _context.Products.ToListAsync();
         }
 
@@ -27,14 +31,34 @@ namespace BesmokeInventoryApp.Server.Controllers
         [HttpPost]
         public async Task<ActionResult<Product>> CreateProduct(Product product)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            bool exists = await _context.Products.AnyAsync(p =>
+    p.Name == product.Name &&
+    p.Type == product.Type &&
+    p.Size == product.Size &&
+    p.Material == product.Material);
+
+            if (exists)
+            {
+                return Conflict("A product with the same name, type, size, and material already exists.");
+            }
+
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
+
             return CreatedAtAction(nameof(GetProducts), new { id = product.Id }, product);
         }
         // PUT: api/products/5
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProduct(int id, Product updatedProduct)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             if (id != updatedProduct.Id)
                 return BadRequest("Product ID mismatch.");
 
@@ -54,6 +78,11 @@ namespace BesmokeInventoryApp.Server.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var product = await _context.Products.FindAsync(id);
             if (product == null)
                 return NotFound("Product not found.");

@@ -20,6 +20,10 @@ namespace BesmokeInventoryApp.Server.Controllers
         [HttpPost("adjust")]
         public async Task<IActionResult> AdjustInventory(int productId, int quantityChange)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var product = await _context.Products.FindAsync(productId);
             if (product == null)
                 return NotFound("Product not found");
@@ -54,6 +58,10 @@ namespace BesmokeInventoryApp.Server.Controllers
         [HttpGet("status")]
         public async Task<ActionResult<IEnumerable<InventoryStatus>>> GetInventory()
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             return await _context.InventoryStatuses.ToListAsync();
         }
 
@@ -61,6 +69,10 @@ namespace BesmokeInventoryApp.Server.Controllers
         [HttpGet("lowstock")]
         public async Task<ActionResult<IEnumerable<InventoryStatus>>> GetLowStock()
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             return await _context.InventoryStatuses
                 .Where(s => s.AvailableQuantity < 50)
                 .ToListAsync();
