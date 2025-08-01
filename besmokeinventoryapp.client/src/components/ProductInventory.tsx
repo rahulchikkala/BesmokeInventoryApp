@@ -184,6 +184,7 @@ async function handleAddProduct() {
       <table className="table table-bordered table-sm">
         <thead className="table-light">
           <tr>
+          <th>ID</th>
             <th onClick={() => handleSort('name')}>
               Name {sortKey === 'name' ? (sortAsc ? '▲' : '▼') : ''}
             </th>
@@ -205,6 +206,7 @@ async function handleAddProduct() {
             <tr key={p.id}>
               {editingId === p.id ? (
                 <>
+                <td>{p.id}</td>
                   <td>
                     <input
                       className="form-control form-control-sm"
@@ -241,6 +243,7 @@ async function handleAddProduct() {
                 </>
               ) : (
                 <>
+                <td>{p.id}</td>
                   <td>{p.name}</td>
                   <td>{p.type}</td>
                   <td>{p.size}</td>
