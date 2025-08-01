@@ -11,7 +11,7 @@ const ProductSearch: React.FC = () => {
   const [sortKey, setSortKey] = useState<keyof Product>('name');
   const [sortAsc, setSortAsc] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [searched, setSearched] = useState(false);
   const loadResults = async (
     sort: keyof Product = sortKey,
     asc: boolean = sortAsc
@@ -19,6 +19,7 @@ const ProductSearch: React.FC = () => {
     try {
       const data = await searchProducts(term, typeTerm, sizeTerm, materialTerm, sort, !asc);
       setResults(data);
+      setSearched(true);
       setError(null);
     } catch {
       setError('Search failed');
@@ -80,6 +81,9 @@ const ProductSearch: React.FC = () => {
         </div>
       </form>
       {error && <div className="alert alert-danger">{error}</div>}
+      {searched && results.length === 0 && !error && (
+        <div className="alert alert-warning">No products found</div>
+      )}
       {results.length > 0 && (
         <table className="table table-bordered table-sm">
           <thead className="table-light">

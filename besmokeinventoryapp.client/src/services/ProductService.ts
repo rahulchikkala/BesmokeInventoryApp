@@ -93,8 +93,15 @@ export async function searchProducts(
   sortBy?: string,
   descending?: boolean
 ): Promise<Product[]> {
-  const res = await axios.get(`${API_BASE}/products/search`, {
-    params: { name, type, size, material, sortBy, descending }
-  });
-  return res.data;
+ try {
+    const res = await axios.get(`${API_BASE}/products/search`, {
+      params: { name, type, size, material, sortBy, descending }
+    });
+    return res.data;
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err) && err.response?.status === 404) {
+      return [];
+    }
+    throw err;
+  }
 }
