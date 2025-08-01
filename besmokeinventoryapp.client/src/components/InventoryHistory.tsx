@@ -45,10 +45,15 @@ const InventoryHistory: React.FC = () => {
           <tbody>
             {ops.map(op => {
               const product = products.find(p => p.id === op.productId);
+              const name = product
+                ? op.productName !== product.name
+                  ? `${op.productName} (now ${product.name})`
+                  : op.productName
+                : op.productName;
               return (
                 <tr key={op.id}>
                 <td>{op.id}</td>
-                  <td>{product ? product.name : op.productId}</td>
+                  <td>{name}</td>
                   <td>{op.productId}</td>
                   <td>{op.quantityChange}</td>
                   <td>{new Date(op.timestamp).toLocaleString()}</td>

@@ -18,6 +18,7 @@ export interface InventoryStatus {
 export interface InventoryOperation {
   id?: number;
   productId: number;
+  productName: string;
   quantityChange: number;
   timestamp: string;
 }

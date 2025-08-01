@@ -1,13 +1,15 @@
 ﻿using BesmokeInventoryApp.Server.Dtos;
 using BesmokeInventoryApp.Server.Models;
-
+using BesmokeInventoryApp.Server.Data;
+using Microsoft.EntityFrameworkCore;
 public class InventoryService : IInventoryService
 {
     private readonly IInventoryRepository _repo;
-
-    public InventoryService(IInventoryRepository repo)
+    private readonly ApplicationDbContext _context;
+    public InventoryService(IInventoryRepository repo, ApplicationDbContext context)
     {
         _repo = repo;
+        _context = context;
     }
 
     public async Task<List<InventoryStatusDto>> GetInventoryStatusAsync()
@@ -37,6 +39,7 @@ public class InventoryService : IInventoryService
         {
             Id = op.Id, // include ID
             ProductId = op.ProductId,
+            ProductName = op.ProductName ?? string.Empty,
             QuantityChange = op.QuantityChange,
             Timestamp = op.Timestamp
         }).ToList();
@@ -48,6 +51,7 @@ public class InventoryService : IInventoryService
         {
             Id = op.Id,
             ProductId = op.ProductId,
+            ProductName = op.ProductName ?? string.Empty,
             QuantityChange = op.QuantityChange,
             Timestamp = op.Timestamp
         }).ToList();
@@ -66,6 +70,10 @@ public class InventoryService : IInventoryService
         await _repo.AddOperationAsync(new InventoryOperation
         {
             ProductId = productId,
+            ProductName = (await _context.Products
+                .Where(p => p.Id == productId)
+                .Select(p => p.Name)
+                .FirstOrDefaultAsync()) ?? string.Empty,
             QuantityChange = quantityChange,
             Timestamp = DateTime.UtcNow
         });
