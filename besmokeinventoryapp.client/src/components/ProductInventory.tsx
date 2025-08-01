@@ -1,7 +1,12 @@
 ﻿import React, { useEffect, useState } from 'react';
 import {
-  getProducts, getInventory, deleteProduct, updateProduct,
-  adjustInventory, addProduct, getInventoryOperations
+  getProducts,
+  getInventory,
+  deleteProduct,
+  updateProduct,
+  adjustInventory,
+  addProduct,
+  getInventoryOperations
 } from '../services/ProductService';
 import type { Product, InventoryStatus, InventoryOperation } from '../services/ProductService';
 
@@ -25,13 +30,12 @@ const ProductInventory: React.FC = () => {
       getProducts(),
       getInventory(),
       getInventoryOperations()
-    ]);
+    ]); 
     setProducts(prods);
     setInventory(inv);
     setOperations(ops);
     setError(null);
   };
-
   const getQuantity = (productId: number) =>
     inventory.find(i => i.productId === productId)?.availableQuantity ?? 0;
 
@@ -40,12 +44,12 @@ const ProductInventory: React.FC = () => {
     await fetchAll();
   };
 
+
   const handleAdjust = async (id: number, delta: number) => {
     await adjustInventory(id, delta);
     await fetchAll();
-  };
-
-  const handleSort = (key: keyof Product) => {
+    };
+     const handleSort = (key: keyof Product) => {
     if (key === sortKey) {
       setSortAsc(!sortAsc);
     } else {
@@ -59,16 +63,16 @@ const ProductInventory: React.FC = () => {
     setEditProduct({ ...product });
     setError(null);
   };
-
   const handleEditChange = (key: keyof Product, value: string) => {
     setEditProduct(prev => ({ ...prev, [key]: value }));
   };
+
 
   const handleSaveEdit = async () => {
     if (!editProduct.id || !editProduct.name || !editProduct.type || !editProduct.size || !editProduct.material) {
       setError('All fields are required.');
       return;
-    }
+    };
 
     const duplicate = products.find(p =>
       p.id !== editProduct.id &&
@@ -87,7 +91,7 @@ const ProductInventory: React.FC = () => {
       await updateProduct(editProduct as Product);
       setEditingId(null);
       setEditProduct({});
-      fetchAll();
+      await fetchAll();
     } catch {
       setError('Update failed.');
     }
@@ -97,7 +101,9 @@ const ProductInventory: React.FC = () => {
     setNewProduct(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleAddProduct = async () => {
+
+
+async function handleAddProduct() {
     if (!newProduct.name || !newProduct.type || !newProduct.size || !newProduct.material) {
       setError('All fields are required for new product.');
       return;
@@ -118,11 +124,11 @@ const ProductInventory: React.FC = () => {
     try {
       await addProduct(newProduct as Product);
       setNewProduct({});
-      fetchAll();
+      await fetchAll();
     } catch {
       setError('Failed to add product.');
     }
-  };
+  }
 
   const sortedProducts = [...products].sort((a, b) => {
     if (a[sortKey] < b[sortKey]) return sortAsc ? -1 : 1;
@@ -137,20 +143,36 @@ const ProductInventory: React.FC = () => {
 
       <div className="row mb-3">
         <div className="col">
-          <input placeholder="Name" className="form-control form-control-sm"
-            value={newProduct.name || ''} onChange={e => handleNewProductChange('name', e.target.value)} />
+          <input
+            placeholder="Name"
+            className="form-control form-control-sm"
+            value={newProduct.name || ''}
+            onChange={e => handleNewProductChange('name', e.target.value)}
+          />
         </div>
         <div className="col">
-          <input placeholder="Type" className="form-control form-control-sm"
-            value={newProduct.type || ''} onChange={e => handleNewProductChange('type', e.target.value)} />
+          <input
+            placeholder="Type"
+            className="form-control form-control-sm"
+            value={newProduct.type || ''}
+            onChange={e => handleNewProductChange('type', e.target.value)}
+          />
         </div>
         <div className="col">
-          <input placeholder="Size" className="form-control form-control-sm"
-            value={newProduct.size || ''} onChange={e => handleNewProductChange('size', e.target.value)} />
+          <input
+            placeholder="Size"
+            className="form-control form-control-sm"
+            value={newProduct.size || ''}
+            onChange={e => handleNewProductChange('size', e.target.value)}
+          />
         </div>
         <div className="col">
-          <input placeholder="Material" className="form-control form-control-sm"
-            value={newProduct.material || ''} onChange={e => handleNewProductChange('material', e.target.value)} />
+          <input
+            placeholder="Material"
+            className="form-control form-control-sm"
+            value={newProduct.material || ''}
+            onChange={e => handleNewProductChange('material', e.target.value)}
+          />
         </div>
         <div className="col-auto">
           <button className="btn btn-sm btn-success" onClick={handleAddProduct}>Add</button>
@@ -173,8 +195,81 @@ const ProductInventory: React.FC = () => {
             <tr key={p.id}>
               {editingId === p.id ? (
                 <>
-                  <td><input className="form-control form-control-sm" value={editProduct.name || ''} onChange={e => handleEditChange('name', e.target.value)} /></td>
-                  <td><input className="form-control form-control-sm" value={editProduct.type || ''} onChange={e => handleEditChange('type', e.target.value)} /></td>
-                  <td><input className="form-control form-control-sm" value={editProduct.size || ''} onChange={e => handleEditChange('size', e.target.value)} /></td>
-                  <td><input className="form-control form-control-sm" value={editProduct.material || ''} onChange={e => handleEditChange('material', e.target.value)} /></td>
-                  
+                  <td>
+                    <input
+                      className="form-control form-control-sm"
+                      value={editProduct.name || ''}
+                      onChange={e => handleEditChange('name', e.target.value)}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      className="form-control form-control-sm"
+                      value={editProduct.type || ''}
+                      onChange={e => handleEditChange('type', e.target.value)}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      className="form-control form-control-sm"
+                      value={editProduct.size || ''}
+                      onChange={e => handleEditChange('size', e.target.value)}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      className="form-control form-control-sm"
+                      value={editProduct.material || ''}
+                      onChange={e => handleEditChange('material', e.target.value)}
+                    />
+                  </td>
+                  <td>{getQuantity(p.id)}</td>
+                  <td>
+                    <button className="btn btn-sm btn-success me-1" onClick={handleSaveEdit}>Save</button>
+                    <button className="btn btn-sm btn-secondary" onClick={() => setEditingId(null)}>Cancel</button>
+                  </td>
+                </>
+              ) : (
+                <>
+                  <td>{p.name}</td>
+                  <td>{p.type}</td>
+                  <td>{p.size}</td>
+                  <td>{p.material}</td>
+                  <td>{getQuantity(p.id)}</td>
+                  <td>
+                    <button className="btn btn-sm btn-outline-success me-1" onClick={() => handleAdjust(p.id, +1)}>+</button>
+                    <button className="btn btn-sm btn-outline-danger me-1" onClick={() => handleAdjust(p.id, -1)}>-</button>
+                    <button className="btn btn-sm btn-outline-primary me-1" onClick={() => handleEditClick(p)}>Edit</button>
+                    <button className="btn btn-sm btn-outline-dark" onClick={() => handleDelete(p.id)}>Delete</button>
+                  </td>
+                </>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h4 className="mt-5">Inventory History</h4>
+      <table className="table table-bordered table-sm">
+        <thead className="table-light">
+          <tr>
+            <th>Product ID</th>
+            <th>Change</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {operations.map(op => (
+            <tr key={op.id}>
+              <td>{op.productId}</td>
+              <td>{op.quantityChange}</td>
+              <td>{new Date(op.timestamp).toLocaleString()}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default ProductInventory;

@@ -56,3 +56,11 @@ export async function getInventoryOperations(): Promise<InventoryOperation[]> {
   const res = await axios.get(`${API_BASE}/inventory/operations`);
   return res.data;
 }
+
+
+export async function getLowStock(threshold = 50): Promise<InventoryStatus[]> {
+  const res = await axios.get(`${API_BASE}/inventory/lowstock`, {
+    params: { threshold }
+  });
+  return res.data;
+}
