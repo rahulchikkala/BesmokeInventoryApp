@@ -7,4 +7,6 @@ public interface IProductService
     Task<(bool Success, string Message)> CreateProduct(ProductDto dto);
     Task<bool> UpdateProduct(ProductDto dto);
     Task<bool> DeleteProduct(int id);
+    Task<List<ProductDto>> GetProductsByTypeAsync(string type);
+
 }

@@ -48,4 +48,12 @@ public class ProductRepository : IProductRepository
             (p.Size ?? "") == (product.Size ?? "") &&
             (p.Material ?? "") == (product.Material ?? ""));
     }
+
+    public async Task<List<Product>> GetByTypeAsync(string type)
+    {
+        return await _context.Products
+            .Where(p => p.Type == type)
+            .ToListAsync();
+    }
+
 }

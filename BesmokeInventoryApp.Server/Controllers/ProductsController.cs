@@ -24,6 +24,13 @@ public class ProductsController : ControllerBase
         return product == null ? NotFound() : Ok(product);
     }
 
+    [HttpGet("bytype")]
+    public async Task<ActionResult<List<ProductDto>>> GetByType([FromQuery] string type)
+    {
+        return await _service.GetProductsByTypeAsync(type);
+    }
+
+
     [HttpPost]
     public async Task<IActionResult> Create(ProductDto dto)
     {

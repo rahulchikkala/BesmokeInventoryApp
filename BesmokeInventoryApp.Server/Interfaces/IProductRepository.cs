@@ -8,4 +8,6 @@ public interface IProductRepository
     Task UpdateAsync(Product product);
     Task DeleteAsync(Product product);
     Task<bool> ExistsAsync(Product product);
+    Task<List<Product>> GetByTypeAsync(string type);
+
 }

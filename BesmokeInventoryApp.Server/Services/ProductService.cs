@@ -51,4 +51,18 @@ public class ProductService : IProductService
         await _repo.DeleteAsync(existing);
         return true;
     }
+
+    public async Task<List<ProductDto>> GetProductsByTypeAsync(string type)
+    {
+        var products = await _repo.GetByTypeAsync(type);
+        return products.Select(p => new ProductDto
+        {
+            Id = p.Id,
+            Name = p.Name ?? "",
+            Type = p.Type ?? "",
+            Size = p.Size ?? "",
+            Material = p.Material ?? ""
+        }).ToList();
+    }
+
 }
