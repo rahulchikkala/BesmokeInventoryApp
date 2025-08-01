@@ -1,6 +1,6 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
 import {
-  getProducts,
+  getPagedProducts,
   getInventory,
   deleteProduct,
   updateProduct,
@@ -8,7 +8,7 @@ import {
   addProduct,
   getInventoryOperations
 } from '../services/ProductService';
-import type { Product, InventoryStatus, InventoryOperation } from '../services/ProductService';
+import type { Product, InventoryStatus, InventoryOperation, ProductQuery } from '../services/ProductService';
 
 const ProductInventory: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -20,22 +20,33 @@ const ProductInventory: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<keyof Product>('name');
   const [sortAsc, setSortAsc] = useState(true);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
 
-  useEffect(() => {
-    fetchAll();
-  }, []);
+  const fetchAll = useCallback(async () => {
+    const query: ProductQuery = {
+      page,
+      pageSize,
+      sortBy: sortKey,
+      descending: !sortAsc
+    };
 
-  const fetchAll = async () => {
-    const [prods, inv, ops] = await Promise.all([
-      getProducts(),
+    const [{ products: prods, totalCount }, inv, ops] = await Promise.all([
+      getPagedProducts(query),
       getInventory(),
       getInventoryOperations()
-    ]); 
+    ]);
     setProducts(prods);
+    setTotalCount(totalCount);
     setInventory(inv);
     setOperations(ops);
     setError(null);
-  };
+  }, [page, pageSize, sortKey, sortAsc]);
+
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
   const getQuantity = (productId: number) =>
     inventory.find(i => i.productId === productId)?.availableQuantity ?? 0;
 
@@ -44,18 +55,18 @@ const ProductInventory: React.FC = () => {
     await fetchAll();
   };
 
-
   const handleAdjust = async (id: number, delta: number) => {
     await adjustInventory(id, delta);
     await fetchAll();
     };
-     const handleSort = (key: keyof Product) => {
+  const handleSort = (key: keyof Product) => {
     if (key === sortKey) {
       setSortAsc(!sortAsc);
     } else {
       setSortKey(key);
       setSortAsc(true);
     }
+    setPage(1);
   };
 
   const handleEditClick = (product: Product) => {
@@ -66,7 +77,6 @@ const ProductInventory: React.FC = () => {
   const handleEditChange = (key: keyof Product, value: string) => {
     setEditProduct(prev => ({ ...prev, [key]: value }));
   };
-
 
   const handleSaveEdit = async () => {
     if (!editProduct.id || !editProduct.name || !editProduct.type || !editProduct.size || !editProduct.material) {
@@ -101,8 +111,6 @@ const ProductInventory: React.FC = () => {
     setNewProduct(prev => ({ ...prev, [key]: value }));
   };
 
-
-
 async function handleAddProduct() {
     if (!newProduct.name || !newProduct.type || !newProduct.size || !newProduct.material) {
       setError('All fields are required for new product.');
@@ -129,12 +137,6 @@ async function handleAddProduct() {
       setError('Failed to add product.');
     }
   }
-
-  const sortedProducts = [...products].sort((a, b) => {
-    if (a[sortKey] < b[sortKey]) return sortAsc ? -1 : 1;
-    if (a[sortKey] > b[sortKey]) return sortAsc ? 1 : -1;
-    return 0;
-  });
 
   return (
     <div className="container mt-4">
@@ -191,7 +193,7 @@ async function handleAddProduct() {
           </tr>
         </thead>
         <tbody>
-          {sortedProducts.map(p => (
+          {products.map(p => (
             <tr key={p.id}>
               {editingId === p.id ? (
                 <>
@@ -248,6 +250,25 @@ async function handleAddProduct() {
           ))}
         </tbody>
       </table>
+      <div className="d-flex justify-content-between align-items-center my-2">
+        <button
+          className="btn btn-sm btn-outline-secondary"
+          onClick={() => setPage(p => Math.max(1, p - 1))}
+          disabled={page === 1}
+        >
+          Previous
+        </button>
+        <span>
+          Page {page} of {Math.ceil(totalCount / pageSize) || 1}
+        </span>
+        <button
+          className="btn btn-sm btn-outline-secondary"
+          onClick={() => setPage(p => p + 1)}
+          disabled={page >= Math.ceil(totalCount / pageSize)}
+        >
+          Next
+        </button>
+      </div>
 
       <h4 className="mt-5">Inventory History</h4>
       <table className="table table-bordered table-sm">

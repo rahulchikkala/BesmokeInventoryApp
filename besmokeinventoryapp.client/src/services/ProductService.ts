@@ -22,8 +22,20 @@ export interface InventoryOperation {
   timestamp: string;
 }
 
+export interface ProductQuery {
+  page: number;
+  pageSize: number;
+  sortBy?: string;
+  descending?: boolean;
+}
+
 export async function getProducts(): Promise<Product[]> {
   const res = await axios.get(`${API_BASE}/products`);
+  return res.data;
+}
+
+export async function getPagedProducts(query: ProductQuery): Promise<{ products: Product[]; totalCount: number }> {
+  const res = await axios.get(`${API_BASE}/products/paged`, { params: query });
   return res.data;
 }
 
@@ -56,7 +68,6 @@ export async function getInventoryOperations(): Promise<InventoryOperation[]> {
   const res = await axios.get(`${API_BASE}/inventory/operations`);
   return res.data;
 }
-
 
 export async function getLowStock(threshold = 50): Promise<InventoryStatus[]> {
   const res = await axios.get(`${API_BASE}/inventory/lowstock`, {

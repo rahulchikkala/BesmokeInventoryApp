@@ -3,6 +3,7 @@ import ProductInventory from './components/ProductInventory';
 import LowStockAlert from './components/LowStockAlert';
 import InventoryOperations from './components/InventoryOperations';
 
+
 function App() {
   return (
     <div className="container mt-4">
