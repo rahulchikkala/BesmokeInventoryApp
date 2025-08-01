@@ -29,11 +29,21 @@ public class ProductsController : ControllerBase
     {
         return await _service.GetProductsByTypeAsync(type);
     }
-
-    [HttpGet("search")]
-    public async Task<ActionResult<List<ProductDto>>> SearchProducts([FromQuery] string name)
+public async Task<ActionResult<List<ProductDto>>> SearchProducts(
+        [FromQuery] string name,
+        [FromQuery] string? sortBy,
+        [FromQuery] bool descending = false)
     {
-        var products = await _service.SearchByNameAsync(name);
+        var products = await _service.SearchByNameAsync(name, sortBy, descending);
+        return Ok(products);
+    }
+    [HttpGet("search")]
+    public async Task<ActionResult<List<ProductDto>>> SearchProducts(
+        [FromQuery] string name = "",
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool descending = false)
+    {
+        var products = await _service.SearchByNameAsync(name, sortBy, descending);
         return Ok(products);
     }
     [HttpGet("paged")]

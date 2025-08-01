@@ -52,11 +52,24 @@ public class ProductService : IProductService
         return (true, "Created");
     }
 
-    public async Task<List<ProductDto>> SearchByNameAsync(string name)
+    public async Task<List<ProductDto>> SearchByNameAsync(string name, string? sortBy = null, bool descending = false)
     {
-        var products = await _context.Products
-            .Where(p => p.Name != null && p.Name.Contains(name))
-            .ToListAsync();
+        var query = _context.Products
+            .Where(p => p.Name != null && p.Name.Contains(name));
+
+        if (!string.IsNullOrEmpty(sortBy))
+        {
+            query = sortBy.ToLower() switch
+            {
+                "name" => descending ? query.OrderByDescending(p => p.Name) : query.OrderBy(p => p.Name),
+                "type" => descending ? query.OrderByDescending(p => p.Type) : query.OrderBy(p => p.Type),
+                "size" => descending ? query.OrderByDescending(p => p.Size) : query.OrderBy(p => p.Size),
+                "material" => descending ? query.OrderByDescending(p => p.Material) : query.OrderBy(p => p.Material),
+                _ => query
+            };
+        }
+
+        var products = await query.ToListAsync();
 
         return products.Select(p => new ProductDto
         {
@@ -111,6 +124,8 @@ public class ProductService : IProductService
             {
                 "name" => query.Descending ? productsQuery.OrderByDescending(p => p.Name) : productsQuery.OrderBy(p => p.Name),
                 "type" => query.Descending ? productsQuery.OrderByDescending(p => p.Type) : productsQuery.OrderBy(p => p.Type),
+                "size" => query.Descending ? productsQuery.OrderByDescending(p => p.Size) : productsQuery.OrderBy(p => p.Size),
+                "material" => query.Descending ? productsQuery.OrderByDescending(p => p.Material) : productsQuery.OrderBy(p => p.Material),
                 _ => productsQuery
             };
         }
