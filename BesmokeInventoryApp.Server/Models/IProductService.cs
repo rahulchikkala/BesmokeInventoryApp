@@ -1,12 +1,10 @@
-﻿
-
-using BesmokeInventoryApp.Server.Models;
+﻿using BesmokeInventoryApp.Server.Dtos;
 
 public interface IProductService
 {
-    Task<List<Product>> GetAllProducts();
-    Task<Product?> GetProduct(int id);
-    Task<(bool Success, string Message)> CreateProduct(Product product);
-    Task<bool> UpdateProduct(Product product);
+    Task<List<ProductDto>> GetAllProductsAsync();
+    Task<ProductDto?> GetProduct(int id);
+    Task<(bool Success, string Message)> CreateProduct(ProductDto dto);
+    Task<bool> UpdateProduct(ProductDto dto);
     Task<bool> DeleteProduct(int id);
 }

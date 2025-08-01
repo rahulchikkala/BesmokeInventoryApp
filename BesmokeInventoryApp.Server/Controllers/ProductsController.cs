@@ -1,70 +1,51 @@
-﻿using BesmokeInventoryApp.Server.Models;
+﻿using BesmokeInventoryApp.Server.Dtos;
+using BesmokeInventoryApp.Server.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
-namespace BesmokeInventoryApp.Server.Controllers
+[ApiController]
+[Route("api/[controller]")]
+public class ProductsController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ProductsController : ControllerBase
+    private readonly IProductService _service;
+
+    public ProductsController(IProductService service)
     {
-        private readonly IProductService _service;
+        _service = service;
+    }
 
-        public ProductsController(IProductService service)
-        {
-            _service = service;
-        }
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<ProductDto>>> GetAll()
+        => await _service.GetAllProductsAsync();
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
-        {
-            return await _service.GetAllProducts();
-        }
+    [HttpGet("{id}")]
+    public async Task<ActionResult<ProductDto>> Get(int id)
+    {
+        var product = await _service.GetProduct(id);
+        return product == null ? NotFound() : Ok(product);
+    }
 
-        [HttpPost]
-        public async Task<ActionResult<Product>> CreateProduct(Product product)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+    [HttpPost]
+    public async Task<IActionResult> Create(ProductDto dto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        var (success, message) = await _service.CreateProduct(dto);
+        return success ? Ok(message) : Conflict(message);
+    }
 
-            var result = await _service.CreateProduct(product);
-            if (!result.Success)
-                return Conflict(result.Message);
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, ProductDto dto)
+    {
+        if (id != dto.Id) return BadRequest("ID mismatch");
+        if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            return CreatedAtAction(nameof(GetProducts), new { id = product.Id }, product);
-        }
+        var success = await _service.UpdateProduct(dto);
+        return success ? NoContent() : NotFound();
+    }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProduct(int id, Product updatedProduct)
-        {
-            if (id != updatedProduct.Id)
-                return BadRequest("Product ID mismatch.");
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var existing = await _service.GetProduct(id);
-
-            if (existing == null)
-                return NotFound("Product not found.");
-
-            var success = await _service.UpdateProduct(updatedProduct);
-            if (!success)
-                return NotFound("Product not found.");
-
-            return NoContent();
-
-        }
-
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(int id)
-        {
-            var success = await _service.DeleteProduct(id);
-            if (!success)
-                return NotFound("Product not found.");
-
-            return NoContent();
-        }
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var success = await _service.DeleteProduct(id);
+        return success ? NoContent() : NotFound();
     }
 }

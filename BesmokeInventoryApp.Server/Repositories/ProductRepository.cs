@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BesmokeInventoryApp.Server.Data;
 using BesmokeInventoryApp.Server.Models;
-using BesmokeInventoryApp.Server.Data;
+using Microsoft.EntityFrameworkCore;
 
 public class ProductRepository : IProductRepository
 {
@@ -11,18 +11,15 @@ public class ProductRepository : IProductRepository
         _context = context;
     }
 
-    public async Task<List<Product>> GetAllAsync() =>
-        await _context.Products.ToListAsync();
+    public async Task<List<Product>> GetAllAsync()
+    {
+        return await _context.Products.ToListAsync();
+    }
 
-    public async Task<Product?> GetByIdAsync(int id) =>
-        await _context.Products.FindAsync(id);
-
-    public async Task<bool> ExistsAsync(Product product) =>
-        await _context.Products.AnyAsync(p =>
-            p.Name == product.Name &&
-            p.Type == product.Type &&
-            p.Size == product.Size &&
-            p.Material == product.Material);
+    public async Task<Product?> GetByIdAsync(int id)
+    {
+        return await _context.Products.FindAsync(id);
+    }
 
     public async Task AddAsync(Product product)
     {
@@ -32,19 +29,8 @@ public class ProductRepository : IProductRepository
 
     public async Task UpdateAsync(Product product)
     {
-        var tracked = _context.ChangeTracker.Entries<Product>()
-                      .FirstOrDefault(e => e.Entity.Id == product.Id);
-
-        if (tracked != null)
-        {
-            tracked.State = EntityState.Detached;
-        }
-
         _context.Products.Attach(product);
         _context.Entry(product).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
-
-
         await _context.SaveChangesAsync();
     }
 
@@ -52,5 +38,14 @@ public class ProductRepository : IProductRepository
     {
         _context.Products.Remove(product);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<bool> ExistsAsync(Product product)
+    {
+        return await _context.Products.AnyAsync(p =>
+            (p.Name ?? "") == (product.Name ?? "") &&
+            (p.Type ?? "") == (product.Type ?? "") &&
+            (p.Size ?? "") == (product.Size ?? "") &&
+            (p.Material ?? "") == (product.Material ?? ""));
     }
 }

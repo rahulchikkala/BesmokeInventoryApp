@@ -1,4 +1,6 @@
-﻿using BesmokeInventoryApp.Server.Models;
+﻿using BesmokeInventoryApp.Server.Dtos;
+using BesmokeInventoryApp.Server.Mappers;
+using BesmokeInventoryApp.Server.Models;
 
 public class ProductService : IProductService
 {
@@ -9,12 +11,21 @@ public class ProductService : IProductService
         _repo = repo;
     }
 
-    public async Task<List<Product>> GetAllProducts() => await _repo.GetAllAsync();
-
-    public async Task<Product?> GetProduct(int id) => await _repo.GetByIdAsync(id);
-
-    public async Task<(bool Success, string Message)> CreateProduct(Product product)
+    public async Task<List<ProductDto>> GetAllProductsAsync()
     {
+        var products = await _repo.GetAllAsync();
+        return products.Select(ProductMapper.ToDto).ToList();
+    }
+
+    public async Task<ProductDto?> GetProduct(int id)
+    {
+        var product = await _repo.GetByIdAsync(id);
+        return product == null ? null : ProductMapper.ToDto(product);
+    }
+
+    public async Task<(bool Success, string Message)> CreateProduct(ProductDto dto)
+    {
+        var product = ProductMapper.ToEntity(dto);
         if (await _repo.ExistsAsync(product))
             return (false, "Duplicate product");
 
@@ -22,12 +33,13 @@ public class ProductService : IProductService
         return (true, "Created");
     }
 
-    public async Task<bool> UpdateProduct(Product product)
+    public async Task<bool> UpdateProduct(ProductDto dto)
     {
-        var existing = await _repo.GetByIdAsync(product.Id);
+        var existing = await _repo.GetByIdAsync(dto.Id);
         if (existing == null) return false;
 
-        await _repo.UpdateAsync(product);
+        var updated = ProductMapper.ToEntity(dto);
+        await _repo.UpdateAsync(updated);
         return true;
     }
 
