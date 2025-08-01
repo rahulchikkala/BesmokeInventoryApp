@@ -6,14 +6,14 @@ import {
   updateProduct,
   adjustInventory,
   addProduct,
-  getInventoryOperations
+
 } from '../services/ProductService';
-import type { Product, InventoryStatus, InventoryOperation, ProductQuery } from '../services/ProductService';
+import type { Product, InventoryStatus, ProductQuery } from '../services/ProductService';
 
 const ProductInventory: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [inventory, setInventory] = useState<InventoryStatus[]>([]);
-  const [operations, setOperations] = useState<InventoryOperation[]>([]);
+  
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editProduct, setEditProduct] = useState<Partial<Product>>({});
   const [newProduct, setNewProduct] = useState<Partial<Product>>({});
@@ -32,15 +32,15 @@ const ProductInventory: React.FC = () => {
       descending: !sortAsc
     };
 
-    const [{ products: prods, totalCount }, inv, ops] = await Promise.all([
+    const [{ products: prods, totalCount }, inv] = await Promise.all([
       getPagedProducts(query),
       getInventory(),
-      getInventoryOperations()
+
     ]);
     setProducts(prods);
     setTotalCount(totalCount);
     setInventory(inv);
-    setOperations(ops);
+
     setError(null);
   }, [page, pageSize, sortKey, sortAsc]);
 
@@ -184,10 +184,18 @@ async function handleAddProduct() {
       <table className="table table-bordered table-sm">
         <thead className="table-light">
           <tr>
-            <th onClick={() => handleSort('name')}>Name</th>
-            <th onClick={() => handleSort('type')}>Type</th>
-            <th onClick={() => handleSort('size')}>Size</th>
-            <th onClick={() => handleSort('material')}>Material</th>
+            <th onClick={() => handleSort('name')}>
+              Name {sortKey === 'name' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
+            <th onClick={() => handleSort('type')}>
+              Type {sortKey === 'type' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
+            <th onClick={() => handleSort('size')}>
+              Size {sortKey === 'size' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
+            <th onClick={() => handleSort('material')}>
+              Material {sortKey === 'material' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
             <th>Stock</th>
             <th>Actions</th>
           </tr>
@@ -270,25 +278,7 @@ async function handleAddProduct() {
         </button>
       </div>
 
-      <h4 className="mt-5">Inventory History</h4>
-      <table className="table table-bordered table-sm">
-        <thead className="table-light">
-          <tr>
-            <th>Product ID</th>
-            <th>Change</th>
-            <th>Timestamp</th>
-          </tr>
-        </thead>
-        <tbody>
-          {operations.map(op => (
-            <tr key={op.id}>
-              <td>{op.productId}</td>
-              <td>{op.quantityChange}</td>
-              <td>{new Date(op.timestamp).toLocaleString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+     
     </div>
   );
 };

@@ -21,7 +21,10 @@ export interface InventoryOperation {
   quantityChange: number;
   timestamp: string;
 }
-
+export interface PagedQuery {
+  page: number;
+  pageSize: number;
+}
 export interface ProductQuery {
   page: number;
   pageSize: number;
@@ -69,9 +72,25 @@ export async function getInventoryOperations(): Promise<InventoryOperation[]> {
   return res.data;
 }
 
+export async function getPagedInventoryOperations(query: PagedQuery): Promise<{ operations: InventoryOperation[]; totalCount: number }> {
+  const res = await axios.get(`${API_BASE}/inventory/operations/paged`, { params: query });
+  return res.data;
+}
+
 export async function getLowStock(threshold = 50): Promise<InventoryStatus[]> {
   const res = await axios.get(`${API_BASE}/inventory/lowstock`, {
     params: { threshold }
+  });
+  return res.data;
+}
+
+export async function searchProducts(
+  name: string,
+  sortBy?: string,
+  descending?: boolean
+): Promise<Product[]> {
+  const res = await axios.get(`${API_BASE}/products/search`, {
+    params: { name, sortBy, descending }
   });
   return res.data;
 }

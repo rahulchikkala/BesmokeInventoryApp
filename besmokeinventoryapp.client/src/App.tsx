@@ -1,14 +1,13 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import ProductInventory from './components/ProductInventory';
 import LowStockAlert from './components/LowStockAlert';
-import InventoryOperations from './components/InventoryOperations';
+import ProductSearch from './components/ProductSearch';
 import RecentOperations from './components/RecentOperations';
 import InventoryHistory from './components/InventoryHistory';
 import { useState } from 'react';
 
 function App() {
-    const [page, setPage] = useState<'inventory' | 'operations' | 'history'>('inventory');
-
+    const [page, setPage] = useState<'inventory' | 'operations' | 'history' | 'search'>('inventory');
   return (
     <div className="container mt-4">
       <h1 className="mb-4">Inventory Dashboard</h1>
@@ -22,6 +21,9 @@ function App() {
         <li className="nav-item">
           <button className={`nav-link ${page === 'history' ? 'active' : ''}`} onClick={() => setPage('history')}>Inventory History</button>
         </li>
+        <li className="nav-item">
+          <button className={`nav-link ${page === 'search' ? 'active' : ''}`} onClick={() => setPage('search')}>Search</button>
+        </li>
       </ul>
 
       {page === 'inventory' && (
@@ -32,6 +34,7 @@ function App() {
       )}
       {page === 'operations' && <RecentOperations />}
       {page === 'history' && <InventoryHistory />}
+      {page === 'search' && <ProductSearch />}
     </div>
   );
 }

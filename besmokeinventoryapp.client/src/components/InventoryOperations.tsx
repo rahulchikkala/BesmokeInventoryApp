@@ -1,7 +1,6 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { getInventoryOperations } from '../services/ProductService';
-import type { InventoryOperation } from '../services/ProductService';
-
+import { getInventoryOperations, getProducts } from '../services/ProductService';
+import type { InventoryOperation, Product } from '../services/ProductService';
 interface Props {
   limit?: number;
   title?: string;
@@ -9,38 +8,52 @@ interface Props {
 
 const InventoryOperations: React.FC<Props> = ({ limit, title = 'Inventory Operations' }) => {
   const [ops, setOps] = useState<InventoryOperation[]>([]);
+const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     const load = async () => {
-      const data = await getInventoryOperations();
-      setOps(data);
+      const [opsData, productData] = await Promise.all([
+        getInventoryOperations(),
+        getProducts()
+      ]);
+      setOps(opsData);
+      setProducts(productData);
     };
     load();
   }, []);
 
-  if (ops.length === 0) return null;
+
 
   return (
     <div className="mt-4">
       <h4>{title}</h4>
-      <table className="table table-bordered table-sm">
-        <thead className="table-light">
-          <tr>
-            <th>Product ID</th>
-            <th>Change</th>
-            <th>Timestamp</th>
-          </tr>
-        </thead>
-        <tbody>
-       {(limit ? ops.slice(0, limit) : ops).map(op => (
-            <tr key={op.id}>
-              <td>{op.productId}</td>
-              <td>{op.quantityChange}</td>
-              <td>{new Date(op.timestamp).toLocaleString()}</td>
+      {ops.length === 0 ? (
+        <p>No operations found.</p>
+      ) : (
+        <table className="table table-bordered table-sm">
+          <thead className="table-light">
+            <tr>
+              <th>Product</th>
+              <th>Change</th>
+              <th>Timestamp</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+         
+   
+        </thead>
+          <tbody>
+         {(limit ? ops.slice(0, limit) : ops).map(op => {
+            const product = products.find(p => p.id === op.productId);
+            return (
+              <tr key={op.id}>
+                <td>{product ? product.name : op.productId}</td>
+                <td>{op.quantityChange}</td>
+                <td>{new Date(op.timestamp).toLocaleString()}</td>
+              </tr>
+            );
+          })}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };
