@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:5271/api';
+const API_BASE = 'http://localhost:5050/api';
 
 export interface Product {
   id: number;
@@ -86,12 +86,15 @@ export async function getLowStock(threshold = 50): Promise<InventoryStatus[]> {
 }
 
 export async function searchProducts(
-  name: string,
+ name?: string,
+  type?: string,
+  size?: string,
+  material?: string,
   sortBy?: string,
   descending?: boolean
 ): Promise<Product[]> {
   const res = await axios.get(`${API_BASE}/products/search`, {
-    params: { name, sortBy, descending }
+    params: { name, type, size, material, sortBy, descending }
   });
   return res.data;
 }

@@ -32,11 +32,14 @@ public class ProductsController : ControllerBase
 
     [HttpGet("search")]
     public async Task<ActionResult<List<ProductDto>>> SearchProducts(
-        [FromQuery] string name = "",
+       [FromQuery] string? name = null,
+        [FromQuery] string? type = null,
+        [FromQuery] string? size = null,
+        [FromQuery] string? material = null,
         [FromQuery] string? sortBy = null,
         [FromQuery] bool descending = false)
     {
-        var products = await _service.SearchByNameAsync(name, sortBy, descending);
+        var products = await _service.SearchProductsAsync(name, type, size, material, sortBy, descending);
         return Ok(products);
     }
     [HttpGet("paged")]

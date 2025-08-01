@@ -8,7 +8,7 @@ const InventoryHistory: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
-
+  const [search, setSearch] = useState('');
   const fetchAll = useCallback(async () => {
     const query: PagedQuery = { page, pageSize };
     const [{ operations, totalCount }, prods] = await Promise.all([
@@ -25,11 +25,26 @@ const InventoryHistory: React.FC = () => {
   }, [fetchAll]);
 
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
-
+  const filteredOps = ops.filter(op => {
+    const product = products.find(p => p.id === op.productId);
+    const name = product ? product.name : op.productName;
+    return (
+      name.toLowerCase().includes(search.toLowerCase()) ||
+      op.productId.toString().includes(search)
+    );
+  });
   return (
     <div className="mt-4">
       <h4>Inventory History</h4>
-      {ops.length === 0 ? (
+     <div className="mb-2">
+        <input
+          className="form-control"
+          placeholder="Search by product name or ID"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+      </div>
+      {filteredOps.length === 0 ? (
         <p>No operations found.</p>
       ) : (
         <table className="table table-bordered table-sm">
@@ -43,7 +58,7 @@ const InventoryHistory: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {ops.map(op => {
+          {filteredOps.map(op => {
               const product = products.find(p => p.id === op.productId);
               const name = product
                 ? op.productName !== product.name

@@ -52,11 +52,24 @@ public class ProductService : IProductService
         return (true, "Created");
     }
 
-    public async Task<List<ProductDto>> SearchByNameAsync(string name, string? sortBy = null, bool descending = false)
+    public async Task<List<ProductDto>> SearchProductsAsync(
+        string? name,
+        string? type,
+        string? size,
+        string? material,
+        string? sortBy = null,
+        bool descending = false)
     {
-        var query = _context.Products
-            .Where(p => p.Name != null && p.Name.Contains(name));
+        var query = _context.Products.AsQueryable();
 
+        if (!string.IsNullOrEmpty(name))
+            query = query.Where(p => p.Name != null && p.Name.Contains(name));
+        if (!string.IsNullOrEmpty(type))
+            query = query.Where(p => p.Type != null && p.Type.Contains(type));
+        if (!string.IsNullOrEmpty(size))
+            query = query.Where(p => p.Size != null && p.Size.Contains(size));
+        if (!string.IsNullOrEmpty(material))
+            query = query.Where(p => p.Material != null && p.Material.Contains(material));
         if (!string.IsNullOrEmpty(sortBy))
         {
             query = sortBy.ToLower() switch
@@ -71,14 +84,8 @@ public class ProductService : IProductService
 
         var products = await query.ToListAsync();
 
-        return products.Select(p => new ProductDto
-        {
-            Id = p.Id,
-            Name = p.Name ?? string.Empty,
-            Type = p.Type ?? string.Empty,
-            Size = p.Size ?? string.Empty,
-            Material = p.Material ?? string.Empty
-        }).ToList();
+        return products.Select(ProductMapper.ToDto).ToList();
+
     }
 
 

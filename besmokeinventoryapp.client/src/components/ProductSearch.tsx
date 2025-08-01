@@ -4,6 +4,9 @@ import type { Product } from '../services/ProductService';
 
 const ProductSearch: React.FC = () => {
   const [term, setTerm] = useState('');
+  const [typeTerm, setTypeTerm] = useState('');
+  const [sizeTerm, setSizeTerm] = useState('');
+  const [materialTerm, setMaterialTerm] = useState('');
   const [results, setResults] = useState<Product[]>([]);
   const [sortKey, setSortKey] = useState<keyof Product>('name');
   const [sortAsc, setSortAsc] = useState(true);
@@ -14,7 +17,7 @@ const ProductSearch: React.FC = () => {
     asc: boolean = sortAsc
   ) => {
     try {
-      const data = await searchProducts(term, sort, !asc);
+      const data = await searchProducts(term, typeTerm, sizeTerm, materialTerm, sort, !asc);
       setResults(data);
       setError(null);
     } catch {
@@ -37,16 +40,44 @@ const ProductSearch: React.FC = () => {
   return (
     <div className="card p-3">
       <h4 className="mb-3">Search Products</h4>
-      <form onSubmit={handleSearch} className="input-group mb-3">
-        <input
-          className="form-control"
-          placeholder="Search by name"
-          value={term}
-          onChange={e => setTerm(e.target.value)}
-        />
-        <button className="btn btn-primary" type="submit">
-          Search
-        </button>
+      <form onSubmit={handleSearch} className="row g-2 mb-3">
+        <div className="col">
+          <input
+            className="form-control"
+            placeholder="Name"
+            value={term}
+            onChange={e => setTerm(e.target.value)}
+          />
+        </div>
+        <div className="col">
+          <input
+            className="form-control"
+            placeholder="Type"
+            value={typeTerm}
+            onChange={e => setTypeTerm(e.target.value)}
+          />
+        </div>
+        <div className="col">
+          <input
+            className="form-control"
+            placeholder="Size"
+            value={sizeTerm}
+            onChange={e => setSizeTerm(e.target.value)}
+          />
+        </div>
+        <div className="col">
+          <input
+            className="form-control"
+            placeholder="Material"
+            value={materialTerm}
+            onChange={e => setMaterialTerm(e.target.value)}
+          />
+        </div>
+        <div className="col-auto">
+          <button className="btn btn-primary" type="submit">
+            Search
+          </button>
+        </div>
       </form>
       {error && <div className="alert alert-danger">{error}</div>}
       {results.length > 0 && (
