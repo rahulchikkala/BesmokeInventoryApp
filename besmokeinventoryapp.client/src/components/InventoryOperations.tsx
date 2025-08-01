@@ -2,7 +2,12 @@
 import { getInventoryOperations } from '../services/ProductService';
 import type { InventoryOperation } from '../services/ProductService';
 
-const InventoryOperations: React.FC = () => {
+interface Props {
+  limit?: number;
+  title?: string;
+}
+
+const InventoryOperations: React.FC<Props> = ({ limit, title = 'Inventory Operations' }) => {
   const [ops, setOps] = useState<InventoryOperation[]>([]);
 
   useEffect(() => {
@@ -17,7 +22,7 @@ const InventoryOperations: React.FC = () => {
 
   return (
     <div className="mt-4">
-      <h4>Recent Inventory Operations</h4>
+      <h4>{title}</h4>
       <table className="table table-bordered table-sm">
         <thead className="table-light">
           <tr>
@@ -27,7 +32,7 @@ const InventoryOperations: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {ops.map(op => (
+       {(limit ? ops.slice(0, limit) : ops).map(op => (
             <tr key={op.id}>
               <td>{op.productId}</td>
               <td>{op.quantityChange}</td>
