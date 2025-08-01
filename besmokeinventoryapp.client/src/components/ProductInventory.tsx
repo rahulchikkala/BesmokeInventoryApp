@@ -1,102 +1,161 @@
 ﻿import React, { useEffect, useState } from 'react';
-import type { InventoryStatus } from '/src/services/ProductService.ts';
-import type { Product } from '/src/services/ProductService.ts';
-import { getProducts, getInventory } from '/src/services/ProductService.ts';
-import { adjustInventory } from '../services/ProductService';
-
+import {
+  getProducts, getInventory, deleteProduct, updateProduct,
+  adjustInventory, addProduct, getInventoryOperations
+} from '../services/ProductService';
+import type { Product, InventoryStatus, InventoryOperation } from '../services/ProductService';
 const ProductInventory: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [inventory, setInventory] = useState<InventoryStatus[]>([]);
+  const [operations, setOperations] = useState<InventoryOperation[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editProduct, setEditProduct] = useState<Partial<Product>>({});
+  const [error, setError] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<keyof Product>('name');
+  const [sortAsc, setSortAsc] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const products = await getProducts();
-        const inventory = await getInventory();
-        setProducts(products);
-        setInventory(inventory);
-      } catch (error) {
-        console.error('Failed to load data:', error);
-      }
-    };
-
-    fetchData();
+    fetchAll();
   }, []);
 
-  const getQuantity = (productId: number) => {
-    const item = inventory.find(i => i.productId === productId);
-    return item?.availableQuantity ?? 0;
+  const fetchAll = async () => {
+    const [prods, inv, ops] = await Promise.all([
+      getProducts(),
+      getInventory(),
+      getInventoryOperations()
+    ]);
+    setProducts(prods);
+    setInventory(inv);
+    setOperations(ops);
+    setError(null);
   };
 
-  const adjust = async (productId: number, change: number) => {
-    await adjustInventory(productId, change);
-    const updatedInventory = await getInventory();
-    setInventory(updatedInventory);
+  const getQuantity = (productId: number) =>
+    inventory.find(i => i.productId === productId)?.availableQuantity ?? 0;
+
+  const handleDelete = async (id: number) => {
+    await deleteProduct(id);
+    await fetchAll();
   };
+
+  const handleAdjust = async (id: number, delta: number) => {
+    await adjustInventory(id, delta);
+    await fetchAll();
+  };
+
+  const handleSort = (key: keyof Product) => {
+    if (key === sortKey) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortKey(key);
+      setSortAsc(true);
+    }
+  };
+
+  const handleEditClick = (product: Product) => {
+    setEditingId(product.id);
+    setEditProduct({ ...product });
+    setError(null);
+  };
+
+  const handleEditChange = (key: keyof Product, value: string) => {
+    setEditProduct(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editProduct.id || !editProduct.name || !editProduct.type || !editProduct.size || !editProduct.material) {
+      setError('All fields are required.');
+      return;
+    }
+
+    try {
+      await updateProduct(editProduct as Product);
+      setEditingId(null);
+      setEditProduct({});
+      fetchAll();
+    } catch (err: any) {
+      setError('Failed to update product. Duplicate or invalid entry.');
+    }
+  };
+
+  const sortedProducts = [...products].sort((a, b) => {
+    if (a[sortKey] < b[sortKey]) return sortAsc ? -1 : 1;
+    if (a[sortKey] > b[sortKey]) return sortAsc ? 1 : -1;
+    return 0;
+  });
 
   return (
-    <div style={{ backgroundColor: '#f7f7f7', minHeight: '100vh', padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
-      <h2 style={{ textAlign: 'center' }}>Product Inventory</h2>
-      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fff' }}>
-        <thead>
-          <tr style={{ backgroundColor: '#ddd' }}>
-            <th style={thStyle}>Name</th>
-            <th style={thStyle}>Type</th>
-            <th style={thStyle}>Size</th>
-            <th style={thStyle}>Material</th>
-            <th style={thStyle}>Stock</th>
-            <th style={thStyle}>Adjust</th>
+    <div className="container mt-4">
+      <h2 className="mb-3">Product Inventory</h2>
+      {error && <div className="alert alert-danger">{error}</div>}
+
+      <table className="table table-bordered table-sm">
+        <thead className="table-light">
+          <tr>
+            <th onClick={() => handleSort('name')}>Name</th>
+            <th onClick={() => handleSort('type')}>Type</th>
+            <th onClick={() => handleSort('size')}>Size</th>
+            <th onClick={() => handleSort('material')}>Material</th>
+            <th>Stock</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {products.map(product => {
-            const quantity = getQuantity(product.id);
-            return (
-              <tr
-                key={product.id}
-                style={{
-                  backgroundColor: quantity < 50 ? '#ffe0e0' : 'white',
-                  color: quantity < 50 ? '#b00000' : 'black',
-                  borderBottom: '1px solid #ccc',
-                }}
-              >
-                <td style={tdStyle}>{product.name}</td>
-                <td style={tdStyle}>{product.type}</td>
-                <td style={tdStyle}>{product.size}</td>
-                <td style={tdStyle}>{product.material}</td>
-                <td style={tdStyle}>{quantity}</td>
-                <td style={tdStyle}>
-                  <button style={btnStyle} onClick={() => adjust(product.id, 1)}>＋</button>
-                  <button style={btnStyle} onClick={() => adjust(product.id, -1)}>－</button>
-                </td>
-              </tr>
-            );
-          })}
+          {sortedProducts.map(p => (
+            <tr key={p.id}>
+              {editingId === p.id ? (
+                <>
+                  <td><input className="form-control form-control-sm" value={editProduct.name || ''} onChange={e => handleEditChange('name', e.target.value)} /></td>
+                  <td><input className="form-control form-control-sm" value={editProduct.type || ''} onChange={e => handleEditChange('type', e.target.value)} /></td>
+                  <td><input className="form-control form-control-sm" value={editProduct.size || ''} onChange={e => handleEditChange('size', e.target.value)} /></td>
+                  <td><input className="form-control form-control-sm" value={editProduct.material || ''} onChange={e => handleEditChange('material', e.target.value)} /></td>
+                  <td>{getQuantity(p.id)}</td>
+                  <td>
+                    <button className="btn btn-sm btn-success me-1" onClick={handleSaveEdit}>Save</button>
+                    <button className="btn btn-sm btn-secondary" onClick={() => setEditingId(null)}>Cancel</button>
+                  </td>
+                </>
+              ) : (
+                <>
+                  <td>{p.name}</td>
+                  <td>{p.type}</td>
+                  <td>{p.size}</td>
+                  <td>{p.material}</td>
+                  <td>{getQuantity(p.id)}</td>
+                  <td>
+                    <button className="btn btn-sm btn-outline-success me-1" onClick={() => handleAdjust(p.id, +1)}>+</button>
+                    <button className="btn btn-sm btn-outline-danger me-1" onClick={() => handleAdjust(p.id, -1)}>-</button>
+                    <button className="btn btn-sm btn-outline-primary me-1" onClick={() => handleEditClick(p)}>Edit</button>
+                    <button className="btn btn-sm btn-outline-dark" onClick={() => handleDelete(p.id)}>Delete</button>
+                  </td>
+                </>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h4 className="mt-5">Inventory History</h4>
+      <table className="table table-bordered table-sm">
+        <thead className="table-light">
+          <tr>
+            <th>Product ID</th>
+            <th>Change</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {operations.map((op, index) => (
+            <tr key={index}>
+              <td>{op.productId}</td>
+              <td>{op.quantityChange}</td>
+              <td>{new Date(op.timestamp).toLocaleString()}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
   );
-};
-
-const thStyle: React.CSSProperties = {
-  border: '1px solid #ccc',
-  padding: '10px',
-  textAlign: 'left',
-};
-
-const tdStyle: React.CSSProperties = {
-  border: '1px solid #eee',
-  padding: '10px',
-};
-
-const btnStyle: React.CSSProperties = {
-  margin: '0 5px',
-  padding: '5px 10px',
-  cursor: 'pointer',
-  backgroundColor: '#007bff',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '3px',
 };
 
 export default ProductInventory;

@@ -29,10 +29,19 @@ public class ProductRepository : IProductRepository
 
     public async Task UpdateAsync(Product product)
     {
-        _context.Products.Attach(product);
-        _context.Entry(product).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        var existing = await _context.Products.FirstOrDefaultAsync(p => p.Id == product.Id);
+        if (existing != null)
+        {
+            // Update fields manually to avoid tracking issues
+            existing.Name = product.Name;
+            existing.Type = product.Type;
+            existing.Size = product.Size;
+            existing.Material = product.Material;
+
+            await _context.SaveChangesAsync();
+        }
     }
+
 
     public async Task DeleteAsync(Product product)
     {

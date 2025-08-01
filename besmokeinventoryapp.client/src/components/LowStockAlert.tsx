@@ -16,11 +16,11 @@ const LowStockAlert: React.FC = () => {
   if (lowStock.length === 0) return null;
 
   return (
-    <div style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '1rem', marginBottom: '1rem', borderRadius: '4px' }}>
-      <strong>⚠️ Low Stock Alert:</strong>
-      <ul>
-        {lowStock.map(item => (
-          <li key={item.productId}>Product ID {item.productId} — Qty: {item.availableQuantity}</li>
+    <div className="alert alert-warning" role="alert">
+      <strong>Warning:</strong> Some products are low on stock!
+      <ul className="mb-0">
+        {lowStock.map((item, idx) => (
+          <li key={idx}>Product ID {item.productId}: {item.availableQuantity} left</li>
         ))}
       </ul>
     </div>

@@ -1,19 +1,14 @@
-import React from 'react';
-import ProductInventory from './components/ProductInventory';
-import AddProduct from './components/AddProduct';
-import InventoryOperations from './components/InventoryOperations';
-import LowStockAlert from './components/LowStockAlert';
+import React from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import ProductInventory from "./components/ProductInventory";
 
-const App: React.FC = () => {
+function App() {
   return (
-    <div style={{ padding: '2rem', backgroundColor: '#f7f7f7', minHeight: '100vh' }}>
-      <h1 style={{ textAlign: 'center' }}>Besmoke Inventory App</h1>
-      <AddProduct />
-      <LowStockAlert />
+    <div className="container mt-4">
+      <h1 className="mb-4">Inventory Dashboard</h1>
       <ProductInventory />
-      <InventoryOperations />
     </div>
   );
-};
+}
 
 export default App;

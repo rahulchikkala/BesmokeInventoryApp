@@ -11,24 +11,34 @@ export interface Product {
 }
 
 export interface InventoryStatus {
-  id: number;
   productId: number;
   availableQuantity: number;
 }
 
 export interface InventoryOperation {
-  id: number;
+  id?: number;
   productId: number;
   quantityChange: number;
   timestamp: string;
 }
-export async function addProduct(product: Product): Promise<Product> {
-  const res = await axios.post(`${API_BASE}/products`, product);
-  return res.data;
-}
+
 export async function getProducts(): Promise<Product[]> {
   const res = await axios.get(`${API_BASE}/products`);
   return res.data;
+}
+
+export async function addProduct(product: Omit<Product, 'id'>): Promise<Product> {
+  const res = await axios.post(`${API_BASE}/products`, product);
+  return res.data;
+}
+
+export async function updateProduct(product: Product): Promise<Product> {
+  const res = await axios.put(`${API_BASE}/products/${product.id}`, product);
+  return res.data;
+}
+
+export async function deleteProduct(id: number): Promise<void> {
+  await axios.delete(`${API_BASE}/products/${id}`);
 }
 
 export async function getInventory(): Promise<InventoryStatus[]> {
@@ -36,20 +46,13 @@ export async function getInventory(): Promise<InventoryStatus[]> {
   return res.data;
 }
 
-export async function getLowStock(): Promise<InventoryStatus[]> {
-  const res = await axios.get(`${API_BASE}/inventory/lowstock`);
-  return res.data;
-}       
+export async function adjustInventory(productId: number, quantityChange: number): Promise<void> {
+  await axios.post(`${API_BASE}/inventory/adjust`, null, {
+    params: { productId, quantityChange }
+  });
+}
 
 export async function getInventoryOperations(): Promise<InventoryOperation[]> {
   const res = await axios.get(`${API_BASE}/inventory/operations`);
-  return res.data;
-}
-
-
-export async function adjustInventory(productId: number, quantityChange: number) {
-  const res = await axios.post(`${API_BASE}/inventory/adjust`, null, {
-    params: { productId, quantityChange },
-  });
   return res.data;
 }

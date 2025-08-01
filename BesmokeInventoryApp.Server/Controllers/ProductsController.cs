@@ -30,6 +30,19 @@ public class ProductsController : ControllerBase
         return await _service.GetProductsByTypeAsync(type);
     }
 
+    [HttpGet("search")]
+    public async Task<ActionResult<List<ProductDto>>> SearchProducts([FromQuery] string name)
+    {
+        var products = await _service.SearchByNameAsync(name);
+        return Ok(products);
+    }
+    [HttpGet("paged")]
+    public async Task<IActionResult> GetPaged([FromQuery] ProductQueryDto query)
+    {
+        var (products, totalCount) = await _service.GetPagedProductsAsync(query);
+        return Ok(new { products, totalCount });
+    }
+
 
     [HttpPost]
     public async Task<IActionResult> Create(ProductDto dto)
