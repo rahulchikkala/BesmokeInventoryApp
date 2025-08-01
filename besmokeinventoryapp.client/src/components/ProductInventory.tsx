@@ -4,12 +4,14 @@ import {
   adjustInventory, addProduct, getInventoryOperations
 } from '../services/ProductService';
 import type { Product, InventoryStatus, InventoryOperation } from '../services/ProductService';
+
 const ProductInventory: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [inventory, setInventory] = useState<InventoryStatus[]>([]);
   const [operations, setOperations] = useState<InventoryOperation[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editProduct, setEditProduct] = useState<Partial<Product>>({});
+  const [newProduct, setNewProduct] = useState<Partial<Product>>({});
   const [error, setError] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<keyof Product>('name');
   const [sortAsc, setSortAsc] = useState(true);
@@ -68,13 +70,57 @@ const ProductInventory: React.FC = () => {
       return;
     }
 
+    const duplicate = products.find(p =>
+      p.id !== editProduct.id &&
+      p.name === editProduct.name &&
+      p.type === editProduct.type &&
+      p.size === editProduct.size &&
+      p.material === editProduct.material
+    );
+
+    if (duplicate) {
+      setError('Duplicate product exists.');
+      return;
+    }
+
     try {
       await updateProduct(editProduct as Product);
       setEditingId(null);
       setEditProduct({});
       fetchAll();
-    } catch (err: any) {
-      setError('Failed to update product. Duplicate or invalid entry.');
+    } catch {
+      setError('Update failed.');
+    }
+  };
+
+  const handleNewProductChange = (key: keyof Product, value: string) => {
+    setNewProduct(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleAddProduct = async () => {
+    if (!newProduct.name || !newProduct.type || !newProduct.size || !newProduct.material) {
+      setError('All fields are required for new product.');
+      return;
+    }
+
+    const duplicate = products.find(p =>
+      p.name === newProduct.name &&
+      p.type === newProduct.type &&
+      p.size === newProduct.size &&
+      p.material === newProduct.material
+    );
+
+    if (duplicate) {
+      setError('Duplicate product cannot be added.');
+      return;
+    }
+
+    try {
+      await addProduct(newProduct as Product);
+      setNewProduct({});
+      fetchAll();
+    } catch {
+      setError('Failed to add product.');
     }
   };
 
@@ -88,6 +134,28 @@ const ProductInventory: React.FC = () => {
     <div className="container mt-4">
       <h2 className="mb-3">Product Inventory</h2>
       {error && <div className="alert alert-danger">{error}</div>}
+
+      <div className="row mb-3">
+        <div className="col">
+          <input placeholder="Name" className="form-control form-control-sm"
+            value={newProduct.name || ''} onChange={e => handleNewProductChange('name', e.target.value)} />
+        </div>
+        <div className="col">
+          <input placeholder="Type" className="form-control form-control-sm"
+            value={newProduct.type || ''} onChange={e => handleNewProductChange('type', e.target.value)} />
+        </div>
+        <div className="col">
+          <input placeholder="Size" className="form-control form-control-sm"
+            value={newProduct.size || ''} onChange={e => handleNewProductChange('size', e.target.value)} />
+        </div>
+        <div className="col">
+          <input placeholder="Material" className="form-control form-control-sm"
+            value={newProduct.material || ''} onChange={e => handleNewProductChange('material', e.target.value)} />
+        </div>
+        <div className="col-auto">
+          <button className="btn btn-sm btn-success" onClick={handleAddProduct}>Add</button>
+        </div>
+      </div>
 
       <table className="table table-bordered table-sm">
         <thead className="table-light">
@@ -109,53 +177,4 @@ const ProductInventory: React.FC = () => {
                   <td><input className="form-control form-control-sm" value={editProduct.type || ''} onChange={e => handleEditChange('type', e.target.value)} /></td>
                   <td><input className="form-control form-control-sm" value={editProduct.size || ''} onChange={e => handleEditChange('size', e.target.value)} /></td>
                   <td><input className="form-control form-control-sm" value={editProduct.material || ''} onChange={e => handleEditChange('material', e.target.value)} /></td>
-                  <td>{getQuantity(p.id)}</td>
-                  <td>
-                    <button className="btn btn-sm btn-success me-1" onClick={handleSaveEdit}>Save</button>
-                    <button className="btn btn-sm btn-secondary" onClick={() => setEditingId(null)}>Cancel</button>
-                  </td>
-                </>
-              ) : (
-                <>
-                  <td>{p.name}</td>
-                  <td>{p.type}</td>
-                  <td>{p.size}</td>
-                  <td>{p.material}</td>
-                  <td>{getQuantity(p.id)}</td>
-                  <td>
-                    <button className="btn btn-sm btn-outline-success me-1" onClick={() => handleAdjust(p.id, +1)}>+</button>
-                    <button className="btn btn-sm btn-outline-danger me-1" onClick={() => handleAdjust(p.id, -1)}>-</button>
-                    <button className="btn btn-sm btn-outline-primary me-1" onClick={() => handleEditClick(p)}>Edit</button>
-                    <button className="btn btn-sm btn-outline-dark" onClick={() => handleDelete(p.id)}>Delete</button>
-                  </td>
-                </>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h4 className="mt-5">Inventory History</h4>
-      <table className="table table-bordered table-sm">
-        <thead className="table-light">
-          <tr>
-            <th>Product ID</th>
-            <th>Change</th>
-            <th>Timestamp</th>
-          </tr>
-        </thead>
-        <tbody>
-          {operations.map((op, index) => (
-            <tr key={index}>
-              <td>{op.productId}</td>
-              <td>{op.quantityChange}</td>
-              <td>{new Date(op.timestamp).toLocaleString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
-
-export default ProductInventory;
+                  
