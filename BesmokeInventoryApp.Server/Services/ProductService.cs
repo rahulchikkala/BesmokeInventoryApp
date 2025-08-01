@@ -96,7 +96,12 @@ public class ProductService : IProductService
     {
         var existing = await _repo.GetByIdAsync(id);
         if (existing == null) return false;
-
+        var status = await _context.InventoryStatuses
+            .FirstOrDefaultAsync(s => s.ProductId == id);
+        if (status != null)
+        {
+            _context.InventoryStatuses.Remove(status);
+        }
         await _repo.DeleteAsync(existing);
         return true;
     }

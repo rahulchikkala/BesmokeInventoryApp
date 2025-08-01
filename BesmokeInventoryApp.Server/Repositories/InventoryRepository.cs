@@ -25,6 +25,10 @@ public class InventoryRepository : IInventoryRepository
     {
         return await _context.InventoryStatuses
             .Where(s => s.AvailableQuantity < threshold)
+            .Join(_context.Products,
+                status => status.ProductId,
+                product => product.Id,
+                (status, product) => status)
             .ToListAsync();
     }
 
