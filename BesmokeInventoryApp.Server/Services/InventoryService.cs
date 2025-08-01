@@ -30,11 +30,12 @@ public class InventoryService : IInventoryService
         }).ToList();
     }
 
-    public async Task<List<InventoryOperationDto>> GetAllOperationsAsync()
+    public async Task<List<InventoryOperationDto>> GetOperationsAsync() // renamed method
     {
         var ops = await _repo.GetAllOperationsAsync();
         return ops.Select(op => new InventoryOperationDto
         {
+            Id = op.Id, // include ID
             ProductId = op.ProductId,
             QuantityChange = op.QuantityChange,
             Timestamp = op.Timestamp

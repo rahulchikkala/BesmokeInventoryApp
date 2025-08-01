@@ -13,11 +13,12 @@ public class InventoryController : ControllerBase
     }
 
     [HttpGet("operations")]
-    public async Task<ActionResult<List<InventoryOperationDto>>> GetOperations()
+    public async Task<ActionResult<IEnumerable<InventoryOperationDto>>> GetOperations()
     {
-        var ops = await _service.GetAllOperationsAsync();
-        return Ok(ops);
+        var operations = await _service.GetOperationsAsync();
+        return Ok(operations);
     }
+
 
 
 
@@ -35,4 +36,12 @@ public class InventoryController : ControllerBase
         var result = await _service.AdjustInventoryAsync(productId, quantityChange);
         return result is null ? NotFound("Product not found") : Ok(result);
     }
+
+    [HttpGet("status")]
+    public async Task<ActionResult<List<InventoryStatusDto>>> GetStatus()
+    {
+        var result = await _service.GetInventoryStatusAsync();
+        return Ok(result);
+    }
+
 }
