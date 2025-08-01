@@ -19,7 +19,12 @@ public class InventoryController : ControllerBase
         return Ok(operations);
     }
 
-
+    [HttpGet("operations/paged")]
+    public async Task<ActionResult> GetPagedOperations([FromQuery] PagedQueryDto query)
+    {
+        var (operations, totalCount) = await _service.GetPagedOperationsAsync(query);
+        return Ok(new { operations, totalCount });
+    }
 
 
     [HttpGet("lowstock")]

@@ -32,7 +32,15 @@ public class InventoryRepository : IInventoryRepository
     {
         return await _context.InventoryOperations.OrderByDescending(o => o.Timestamp).ToListAsync();
     }
-
+    public async Task<(List<InventoryOperation> Operations, int TotalCount)> GetPagedOperationsAsync(int page, int pageSize)
+    {
+        var query = _context.InventoryOperations.OrderByDescending(o => o.Timestamp);
+        var totalCount = await query.CountAsync();
+        var operations = await query.Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        return (operations, totalCount);
+    }
     public async Task AddOperationAsync(InventoryOperation operation)
     {
         await _context.InventoryOperations.AddAsync(operation);

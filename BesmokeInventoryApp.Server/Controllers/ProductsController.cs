@@ -29,14 +29,7 @@ public class ProductsController : ControllerBase
     {
         return await _service.GetProductsByTypeAsync(type);
     }
-public async Task<ActionResult<List<ProductDto>>> SearchProducts(
-        [FromQuery] string name,
-        [FromQuery] string? sortBy,
-        [FromQuery] bool descending = false)
-    {
-        var products = await _service.SearchByNameAsync(name, sortBy, descending);
-        return Ok(products);
-    }
+
     [HttpGet("search")]
     public async Task<ActionResult<List<ProductDto>>> SearchProducts(
         [FromQuery] string name = "",

@@ -41,7 +41,18 @@ public class InventoryService : IInventoryService
             Timestamp = op.Timestamp
         }).ToList();
     }
-
+    public async Task<(List<InventoryOperationDto> Operations, int TotalCount)> GetPagedOperationsAsync(PagedQueryDto query)
+    {
+        var (ops, totalCount) = await _repo.GetPagedOperationsAsync(query.Page, query.PageSize);
+        var dtos = ops.Select(op => new InventoryOperationDto
+        {
+            Id = op.Id,
+            ProductId = op.ProductId,
+            QuantityChange = op.QuantityChange,
+            Timestamp = op.Timestamp
+        }).ToList();
+        return (dtos, totalCount);
+    }
     public async Task<InventoryStatusDto?> AdjustInventoryAsync(int productId, int quantityChange)
     {
         var status = await _repo.GetStatusAsync(productId);
