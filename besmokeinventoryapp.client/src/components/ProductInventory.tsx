@@ -11,6 +11,7 @@ import {
   adjustInventory,
   updateProduct,
   deleteProduct,
+  searchProducts,
 } from '../services/ProductService';
 
 const ProductInventory: React.FC = () => {
@@ -22,24 +23,35 @@ const ProductInventory: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
+  const [search, setSearch] = useState('');
   const [editingProduct, setEditingProduct] = useState<(Product & { available: number }) | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
-      const query: ProductQuery = { page, pageSize };
-      const [{ products, totalCount }, inventory] = await Promise.all([
-        getPagedProducts(query),
-        getInventory(),
-      ]);
-      setProducts(products);
-      setInventory(inventory);
-      setTotalCount(totalCount);
+if (search) {
+        const [products, inventory] = await Promise.all([
+          searchProducts(search),
+          getInventory(),
+        ]);
+        setProducts(products);
+        setInventory(inventory);
+        setTotalCount(products.length);
+      } else {
+        const query: ProductQuery = { page, pageSize };
+        const [{ products, totalCount }, inventory] = await Promise.all([
+          getPagedProducts(query),
+          getInventory(),
+        ]);
+        setProducts(products);
+        setInventory(inventory);
+        setTotalCount(totalCount);
+      }
     } catch (error) {
       console.error('Failed to load data:', error);
     }
-  }, [page, pageSize]);
+  }, [page, pageSize, search]);
   const handleProductAdded = async () => {
     await fetchData();
     setMessage('Product added!');
@@ -47,7 +59,9 @@ const ProductInventory: React.FC = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
   useEffect(() => {
     if (!message) return;
     const timer = setTimeout(() => setMessage(null), 3000);
@@ -115,14 +129,25 @@ const ProductInventory: React.FC = () => {
     });
   }
 
-  const totalPages = Math.ceil(totalCount / pageSize) || 1;
+  const totalPages = search ? 1 : Math.ceil(totalCount / pageSize) || 1;
 
   return (
     <>
       <div className="card shadow-sm p-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h4 className="section-title text-primary mb-0">Product Inventory</h4>
-         <AddProduct onAdd={handleProductAdded} />
+       <div className="d-flex align-items-center">
+          <div className="search-container me-2">
+            <i className="bi bi-search"></i>
+            <input
+              type="text"
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <AddProduct onAdd={handleProductAdded} />
+        </div>
       </div>
 
         <div className="table-responsive">
@@ -178,30 +203,18 @@ const ProductInventory: React.FC = () => {
                   <td>{product.available}</td>
                   <td>
                     <button
-                      className="btn btn-sm btn-outline-primary me-1"
-                      onClick={() => adjust(product.id, 1)}
-                    >
-                      ＋
-                    </button>
-                    <button
-                      className="btn btn-sm btn-outline-secondary"
-                      onClick={() => adjust(product.id, -1)}
-                    >
-                      －
-                    </button>
-                  </td>
-                  <td>
-                    <button
-                      className="btn btn-sm btn-primary me-1"
+                      className="btn btn-sm btn-primary me-1 icon-btn"
                       onClick={() => openEdit(product)}
                     >
-                      Edit
+                      <i className="bi bi-pencil"></i>
+                      <span className="btn-label">Edit</span>
                     </button>
                     <button
-                      className="btn btn-sm btn-danger"
+                      className="btn btn-sm btn-danger icon-btn"
                       onClick={() => setDeleteId(product.id)}
                     >
-                      Delete
+                      <i className="bi bi-trash"></i>
+                      <span className="btn-label">Delete</span>
                     </button>
                   </td>
                 </tr>
@@ -209,25 +222,27 @@ const ProductInventory: React.FC = () => {
             </tbody>
           </table>
         </div>
-        <div className="text-center mt-3">
-          <button
-            className="btn btn-primary me-2"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >
-            Previous
-          </button>
-          <span>
-            Page {page} of {totalPages}
-          </span>
-          <button
-            className="btn btn-primary ms-2"
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-          >
-            Next
-          </button>
-        </div>
+        {!search && (
+          <div className="text-center mt-3">
+            <button
+              className="btn btn-primary me-2"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              Previous
+            </button>
+            <span>
+              Page {page} of {totalPages}
+            </span>
+            <button
+              className="btn btn-primary ms-2"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
 
       {editingProduct && (
