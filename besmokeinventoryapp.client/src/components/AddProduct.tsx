@@ -36,10 +36,13 @@ const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
 
   return (
     <>
-      <button className="btn btn-success icon-btn" onClick={() => setOpen(true)}>
-        <i className="bi bi-plus-circle"></i>
-        <span className="btn-label">Add</span>
-      </button>
+        <button
+          className="btn btn-success d-inline-flex align-items-center"
+          onClick={() => setOpen(true)}
+        >
+          <i className="bi bi-plus-circle me-1"></i>
+          Add
+        </button>
       {open && (
         <div style={overlayStyle}>
           <div style={modalStyle}>
