@@ -116,9 +116,12 @@ const ProductInventory: React.FC = () => {
 
   return (
     <>
-      <AddProduct onAdd={fetchData} />
-       <div className="card shadow-sm p-4">
-        <h4 className="section-title text-primary text-center">Product Inventory</h4>
+      <div className="card shadow-sm p-4">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h4 className="section-title text-primary mb-0">Product Inventory</h4>
+        <AddProduct onAdd={fetchData} />
+      </div>
+
         <div className="table-responsive">
           <table className="table table-striped table-hover table-bordered table-sm align-middle">
             <thead className="table-light">

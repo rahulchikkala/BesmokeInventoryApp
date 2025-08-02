@@ -1,49 +1,134 @@
-﻿diff --git a/besmokeinventoryapp.client/src/components/LowStockAlert.tsx b/besmokeinventoryapp.client/src/components/LowStockAlert.tsx
-index 376699104f4c0907e38774f2552fdaa2774934b6..3b931a3b745d92301712c12d50f6b103d8ab6c5c 100644
---- a/besmokeinventoryapp.client/src/components/LowStockAlert.tsx
-+++ b/besmokeinventoryapp.client/src/components/LowStockAlert.tsx
-@@ -1,30 +1,41 @@
- ﻿import React, { useEffect, useState } from 'react';
- import { getLowStock } from '../services/ProductService';
- import type { InventoryStatus } from '../services/ProductService';
+﻿diff --git a/besmokeinventoryapp.client/src/components/ProductInventory.tsx b/besmokeinventoryapp.client/src/components/ProductInventory.tsx
+index aff7c15ba4bb2815b77eb911044312de29d849c6..02b79ca1b43422b634d2407816f0a9c5339b481b 100644
+--- a/besmokeinventoryapp.client/src/components/ProductInventory.tsx
++++ b/besmokeinventoryapp.client/src/components/ProductInventory.tsx
+@@ -94,53 +94,56 @@ const ProductInventory: React.FC = () => {
+     setMessage('Product deleted!');
+     await fetchData();
+   };
  
- const LowStockAlert: React.FC = () => {
-   const [lowStock, setLowStock] = useState<InventoryStatus[]>([]);
-+  const [dismissed, setDismissed] = useState(false);
+   const rows = products.map((p) => ({ ...p, available: getQuantity(p.id) }));
  
-   useEffect(() => {
-     const load = async () => {
-       const data = await getLowStock();
-       setLowStock(data);
-     };
-     load();
-   }, []);
+   if (sortConfig) {
+     rows.sort((a, b) => {
+       const aVal = a[sortConfig.key];
+       const bVal = b[sortConfig.key];
+       if (typeof aVal === 'string' && typeof bVal === 'string') {
+         return sortConfig.direction === 'asc'
+           ? aVal.localeCompare(bVal)
+           : bVal.localeCompare(aVal);
+       }
+       return sortConfig.direction === 'asc'
+         ? (aVal as number) - (bVal as number)
+         : (bVal as number) - (aVal as number);
+     });
+   }
  
--  if (lowStock.length === 0) return null;
-+  if (dismissed || lowStock.length === 0) return null;
+   const totalPages = Math.ceil(totalCount / pageSize) || 1;
  
    return (
--    <div className="alert alert-warning" role="alert">
-+    <div
-+      className="alert alert-warning alert-dismissible"
-+      role="alert"
-+      style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 1050, maxWidth: '300px' }}
-+    >
-       <strong>Warning:</strong> Some products are low on stock!
--      <ul className="mb-0" style={{ maxHeight: '150px', overflowY: 'auto' }}>
-+      <button
-+        type="button"
-+        className="btn-close"
-+        aria-label="Close"
-+        onClick={() => setDismissed(true)}
-+      />
-+      <ul className="mb-0 mt-2" style={{ maxHeight: '150px', overflowY: 'auto' }}>
-         {lowStock.map((item, idx) => (
-           <li key={idx}>Product ID {item.productId}: {item.availableQuantity} left</li>
-         ))}
-       </ul>
-     </div>
+     <>
+-      <AddProduct onAdd={fetchData} />
+-       <div className="card shadow-sm p-4">
+-        <h4 className="section-title text-primary text-center">Product Inventory</h4>
++    <div className="card shadow-sm p-4">
++      <div className="d-flex justify-content-between align-items-center mb-3">
++        <h4 className="section-title text-primary mb-0">Product Inventory</h4>
++        <AddProduct onAdd={fetchData} />
++      </div>
++
+         <div className="table-responsive">
+           <table className="table table-striped table-hover table-bordered table-sm align-middle">
+             <thead className="table-light">
+               <tr>
+                 <th>ID</th>
+                 <th
+                   style={{ cursor: 'pointer' }}
+                   onClick={() => handleSort('name')}
+                 >
+                   Name {sortConfig?.key === 'name' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                 </th>
+                 <th
+                   style={{ cursor: 'pointer' }}
+                   onClick={() => handleSort('type')}
+                 >
+                   Type {sortConfig?.key === 'type' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                 </th>
+                 <th
+                   style={{ cursor: 'pointer' }}
+                   onClick={() => handleSort('size')}
+                 >
+                   Size {sortConfig?.key === 'size' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                 </th>
+                 <th
+                   style={{ cursor: 'pointer' }}
+diff --git a/besmokeinventoryapp.client/src/components/ProductInventory.tsx b/besmokeinventoryapp.client/src/components/ProductInventory.tsx
+index aff7c15ba4bb2815b77eb911044312de29d849c6..02b79ca1b43422b634d2407816f0a9c5339b481b 100644
+--- a/besmokeinventoryapp.client/src/components/ProductInventory.tsx
++++ b/besmokeinventoryapp.client/src/components/ProductInventory.tsx
+@@ -283,63 +286,63 @@ const ProductInventory: React.FC = () => {
+               />
+             </label>
+             <div style={{ textAlign: 'right' }}>
+               <button className="btn btn-primary me-2" onClick={saveEdit}>
+                 Save
+               </button>
+               <button
+                 className="btn btn-secondary"
+                 onClick={() => setEditingProduct(null)}
+               >
+                 Cancel
+               </button>
+             </div>
+           </div>
+         </div>
+       )}
+ 
+       {deleteId !== null && (
+         <div style={overlayStyle}>
+           <div style={modalStyle}>
+             <p>Are you sure you want to delete this product?</p>
+             <div style={{ textAlign: 'right' }}>
+               <button className="btn btn-danger me-2" onClick={confirmDelete}>
+                 Delete
+               </button>
+-               <button
++              <button
+                 className="btn btn-secondary"
+                 onClick={() => setDeleteId(null)}
+               >
+                 Cancel
+               </button>
+             </div>
+           </div>
+         </div>
+       )}
+ 
+       {message && <div style={toastStyle}>{message}</div>}
+-      </>
++    </>
    );
  };
  
- export default LowStockAlert;
+ 
+ 
+ const inputStyle: React.CSSProperties = {
+   width: '100%',
+   padding: '5px',
+   marginBottom: '0.5rem',
+ };
+ 
+ const overlayStyle: React.CSSProperties = {
+   position: 'fixed',
+   top: 0,
+   left: 0,
+   width: '100%',
+   height: '100%',
+   backgroundColor: 'rgba(0,0,0,0.5)',
+   display: 'flex',
+   alignItems: 'center',
+   justifyContent: 'center',
+   zIndex: 1000,
+ };
+ 
+ const modalStyle: React.CSSProperties = {
