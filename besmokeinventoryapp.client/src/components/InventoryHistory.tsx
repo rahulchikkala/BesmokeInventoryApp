@@ -1,4 +1,10 @@
-﻿import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useLayoutEffect,
+} from 'react';
 import { getPagedInventoryOperations, getInventoryOperations, getProducts } from '../services/ProductService';
 import type { InventoryOperation, Product, PagedQuery } from '../services/ProductService';
 import ExpandableCell from './ExpandableCell';
@@ -15,6 +21,10 @@ const InventoryHistory: React.FC = () => {
   const [timeFilter, setTimeFilter] = useState('all');
   const [message, setMessage] = useState<string | null>(null);
   const [pageInput, setPageInput] = useState('');
+  const headerRef = useRef<HTMLDivElement>(null);
+
+  // Remove headerHeight logic for simpler sticky header
+  // Bootstrap sticky-top will handle the table header
 
   const getRange = useCallback(() => {
     const now = new Date();
@@ -31,10 +41,11 @@ const InventoryHistory: React.FC = () => {
         return {};
     }
   }, [timeFilter]);
+
   const fetchAll = useCallback(async () => {
-      try{
+    try {
       const range = getRange();
-  if (search) {
+      if (search) {
         const [allOps, prods] = await Promise.all([
           getInventoryOperations(range.startTime, range.endTime),
           getProducts(),
@@ -58,15 +69,16 @@ const InventoryHistory: React.FC = () => {
     }
   }, [page, pageSize, search, getRange]);
 
-
-   useEffect(() => {
+  useEffect(() => {
     fetchAll();
   }, [fetchAll]);
+
   useEffect(() => {
     if (!message) return;
     const timer = setTimeout(() => setMessage(null), 3000);
     return () => clearTimeout(timer);
   }, [message]);
+
   const filteredOps = ops.filter(op => {
     const product = products.find(p => p.id === op.productId);
     const name = product ? product.name : op.productName;
@@ -75,9 +87,11 @@ const InventoryHistory: React.FC = () => {
       op.productId.toString().includes(search)
     );
   });
- const totalPages = search
+
+  const totalPages = search
     ? Math.ceil(filteredOps.length / pageSize) || 1
     : Math.ceil(totalCount / pageSize) || 1;
+
   const sortedOps = [...filteredOps].sort((a, b) => {
     let cmp = 0;
     const nameA = (products.find(p => p.id === a.productId)?.name ?? a.productName).toLowerCase();
@@ -89,36 +103,19 @@ const InventoryHistory: React.FC = () => {
     const materialA = (products.find(p => p.id === a.productId)?.material ?? a.material).toLowerCase();
     const materialB = (products.find(p => p.id === b.productId)?.material ?? b.material).toLowerCase();
     switch (sortKey) {
-      case 'id':
-        cmp = (a.id ?? 0) - (b.id ?? 0);
-        break;
-      case 'product':
-        cmp = nameA.localeCompare(nameB);
-        break;
-      case 'productId':
-        cmp = a.productId - b.productId;
-        break;
-      case 'type':
-        cmp = typeA.localeCompare(typeB);
-        break;
-      case 'size':
-        cmp = sizeA.localeCompare(sizeB);
-        break;
-      case 'material':
-        cmp = materialA.localeCompare(materialB);
-        break;
-      case 'available':
-        cmp = a.availableQuantity - b.availableQuantity;
-        break;
-      case 'change':
-        cmp = a.quantityChange - b.quantityChange;
-        break;
-      case 'timestamp':
-        cmp = new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
-        break;
+      case 'id': cmp = (a.id ?? 0) - (b.id ?? 0); break;
+      case 'product': cmp = nameA.localeCompare(nameB); break;
+      case 'productId': cmp = a.productId - b.productId; break;
+      case 'type': cmp = typeA.localeCompare(typeB); break;
+      case 'size': cmp = sizeA.localeCompare(sizeB); break;
+      case 'material': cmp = materialA.localeCompare(materialB); break;
+      case 'available': cmp = a.availableQuantity - b.availableQuantity; break;
+      case 'change': cmp = a.quantityChange - b.quantityChange; break;
+      case 'timestamp': cmp = new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(); break;
     }
     return sortAsc ? cmp : -cmp;
   });
+
   const paginatedOps = search
     ? sortedOps.slice((page - 1) * pageSize, page * pageSize)
     : sortedOps;
@@ -128,7 +125,7 @@ const InventoryHistory: React.FC = () => {
       setPage(1);
     }
   }, [totalPages, page]);
-  
+
   const handleSort = (key: typeof sortKey) => {
     if (key === sortKey) {
       setSortAsc(!sortAsc);
@@ -137,10 +134,12 @@ const InventoryHistory: React.FC = () => {
       setSortAsc(true);
     }
   };
+
   const getSortIcon = (key: typeof sortKey) => {
     if (sortKey !== key) return 'bi-chevron-expand';
     return sortAsc ? 'bi-chevron-up' : 'bi-chevron-down';
   };
+
   const exportCsv = async () => {
     try {
       const range = getRange();
@@ -188,203 +187,138 @@ const InventoryHistory: React.FC = () => {
       setMessage('Failed to export CSV');
     }
   };
- return (
+
+  const toastStyle: React.CSSProperties = {
+    position: 'fixed',
+    top: '1rem',
+    right: '1rem',
+    backgroundColor: '#333',
+    color: '#fff',
+    padding: '10px 20px',
+    borderRadius: '4px',
+    zIndex: 2000,
+  };
+
+  return (
     <>
-    <div className="card shadow-sm p-4 mt-4">
-    <div className="bg-white pb-2" style={{ position: 'sticky', top: 0, zIndex: 2 }}>
-      <h4 className="section-title text-primary">Inventory History</h4>
-    <div className="mb-2 d-flex gap-2">
-        <input
-          className="form-control"
-          placeholder="Search by product name or ID"
-          value={search}
-        onChange={e => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-        />
-        <select
-          className="form-select w-auto"
-          value={timeFilter}
-          onChange={e => {
-            setTimeFilter(e.target.value);
-            setPage(1);
-          }}
+      <div className="card shadow-sm p-4 mt-4">
+        <div
+          ref={headerRef}
+          className="bg-white pb-2"
+          style={{ position: 'sticky', top: 0, zIndex: 2 }}
         >
-          <option value="all">All Time</option>
-          <option value="1h">Last 1 Hour</option>
-          <option value="24h">Last 24 Hours</option>
-          <option value="7d">Last 7 Days</option>
-          <option value="24d">Last 24 Days</option>
-        </select>
-        <button className="btn btn-sm btn-primary" onClick={exportCsv}>Export CSV</button>
-      </div>
-      </div>
-      {filteredOps.length === 0 ? (
-        <p>No operations found.</p>
-      ) : (
-         <div className="table-responsive">
-        <table className="table table-striped table-hover table-bordered table-sm align-middle text-center slim-table">
-         <thead className="table-light sticky-top" style={{ top: '4.5rem', zIndex: 1 }}>
-            <tr>
-<th className="sortable text-center" onClick={() => handleSort('id')}>
-              ID <i className={`bi ${getSortIcon('id')}`}></i>
-            </th>
-            <th className="sortable text-center" onClick={() => handleSort('product')}>
-              Product Name <i className={`bi ${getSortIcon('product')}`}></i>
-            </th>
-           <th className="sortable text-center" onClick={() => handleSort('productId')}>
-              Product ID <i className={`bi ${getSortIcon('productId')}`}></i>
-            </th>
-            <th className="sortable text-center" onClick={() => handleSort('type')}>
-              Product Type <i className={`bi ${getSortIcon('type')}`}></i>
-            </th>
-            <th className="sortable text-center" onClick={() => handleSort('size')}>
-              Size <i className={`bi ${getSortIcon('size')}`}></i>
-            </th>
-            <th className="sortable text-center" onClick={() => handleSort('material')}>
-              Material <i className={`bi ${getSortIcon('material')}`}></i>
-            </th>
-           <th className="sortable text-center" onClick={() => handleSort('change')}>
-              Change <i className={`bi ${getSortIcon('change')}`}></i>
-            </th>
-            <th className="sortable text-center" onClick={() => handleSort('available')}>
-              Available <i className={`bi ${getSortIcon('available')}`}></i>
-            </th>
-           <th className="text-center">Action</th>
-            <th className="text-center">Details</th>
-            <th className="sortable text-center" onClick={() => handleSort('timestamp')}>
-              Timestamp <i className={`bi ${getSortIcon('timestamp')}`}></i>
-            </th>
-            </tr>
-          </thead>
-          <tbody>
-          {paginatedOps.map(op => {
-              const product = products.find(p => p.id === op.productId);
-              const name = product
-                ? op.productName !== product.name
-                  ? `${op.productName} (now ${product.name})`
-                  : op.productName
-                : op.productName;
-                 const type = product
-                ? op.productType !== product.type
-                  ? `${op.productType} (now ${product.type})`
-                  : op.productType
-                : op.productType;
-              const size = product
-                ? op.size !== product.size
-                  ? `${op.size} (now ${product.size})`
-                  : op.size
-                : op.size;
-              const material = product
-                ? op.material !== product.material
-                  ? `${op.material} (now ${product.material})`
-                  : op.material
-                : op.material;
-              return (
-                <tr key={op.id}>
-                <td>{op.id}</td>
-                <td>
-                    <ExpandableCell text={name} maxWidth={150} />
-                  </td>
-                 <td>{op.productId}</td>
-                   <td>
-                    <ExpandableCell text={type} maxWidth={120} />
-                  </td>
-            <td>
-                    <ExpandableCell text={size} maxWidth={120} />
-                  </td>
-                  <td>
-                    <ExpandableCell text={material} maxWidth={120} />
-                  </td>
-                  <td>{op.quantityChange > 0 ? `+${op.quantityChange}` : op.quantityChange}</td>
-                  <td>{op.availableQuantity}</td>
-                  <td>{op.operationType}</td>
-               
-              <td>
-                    <ExpandableCell text={op.changeDescription ?? ''} maxWidth={150} />
-                  </td>
-                    
-                   
+          <h4 className="section-title text-primary">Inventory History</h4>
+          <div className="mb-2 d-flex gap-2">
+            <input
+              className="form-control"
+              placeholder="Search by product name or ID"
+              value={search}
+              onChange={e => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+            />
+            <select
+              className="form-select w-auto"
+              value={timeFilter}
+              onChange={e => {
+                setTimeFilter(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="all">All Time</option>
+              <option value="1h">Last 1 Hour</option>
+              <option value="24h">Last 24 Hours</option>
+              <option value="7d">Last 7 Days</option>
+              <option value="24d">Last 24 Days</option>
+            </select>
+            <button className="btn btn-sm btn-primary" onClick={exportCsv}>Export CSV</button>
+          </div>
+        </div>
+
+        <div className="table-responsive">
+          <table className="table table-striped table-hover table-bordered table-sm align-middle text-center slim-table">
+            <thead className="table-light sticky-top" style={{ top: 0, zIndex: 1 }}>
+              <tr>
+                <th className="sortable text-center" onClick={() => handleSort('id')}>
+                  ID <i className={`bi ${getSortIcon('id')}`}></i>
+                </th>
+                <th className="sortable text-center" onClick={() => handleSort('product')}>
+                  Product Name <i className={`bi ${getSortIcon('product')}`}></i>
+                </th>
+                <th className="sortable text-center" onClick={() => handleSort('productId')}>
+                  Product ID <i className={`bi ${getSortIcon('productId')}`}></i>
+                </th>
+                <th className="sortable text-center" onClick={() => handleSort('type')}>
+                  Product Type <i className={`bi ${getSortIcon('type')}`}></i>
+                </th>
+                <th className="sortable text-center" onClick={() => handleSort('size')}>
+                  Size <i className={`bi ${getSortIcon('size')}`}></i>
+                </th>
+                <th className="sortable text-center" onClick={() => handleSort('material')}>
+                  Material <i className={`bi ${getSortIcon('material')}`}></i>
+                </th>
+                <th className="sortable text-center" onClick={() => handleSort('change')}>
+                  Change <i className={`bi ${getSortIcon('change')}`}></i>
+                </th>
+                <th className="sortable text-center" onClick={() => handleSort('available')}>
+                  Available <i className={`bi ${getSortIcon('available')}`}></i>
+                </th>
+                <th className="text-center">Action</th>
+                <th className="text-center">Details</th>
+                <th className="sortable text-center" onClick={() => handleSort('timestamp')}>
+                  Timestamp <i className={`bi ${getSortIcon('timestamp')}`}></i>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedOps.map(op => {
+                const product = products.find(p => p.id === op.productId);
+                const name = product ? (op.productName !== product.name ? `${op.productName} (now ${product.name})` : op.productName) : op.productName;
+                const type = product ? (op.productType !== product.type ? `${op.productType} (now ${product.type})` : op.productType) : op.productType;
+                const size = product ? (op.size !== product.size ? `${op.size} (now ${product.size})` : op.size) : op.size;
+                const material = product ? (op.material !== product.material ? `${op.material} (now ${product.material})` : op.material) : op.material;
+                return (
+                  <tr key={op.id}>
+                    <td>{op.id}</td>
+                    <td><ExpandableCell text={name} maxWidth={150} /></td>
+                    <td>{op.productId}</td>
+                    <td><ExpandableCell text={type} maxWidth={120} /></td>
+                    <td><ExpandableCell text={size} maxWidth={120} /></td>
+                    <td><ExpandableCell text={material} maxWidth={120} /></td>
+                    <td>{op.quantityChange > 0 ? `+${op.quantityChange}` : op.quantityChange}</td>
+                    <td>{op.availableQuantity}</td>
+                    <td>{op.operationType}</td>
+                    <td><ExpandableCell text={op.changeDescription ?? ''} maxWidth={150} /></td>
                     <td>{new Date(op.timestamp).toLocaleString()}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-         </div>
-      )}
-      <div className="d-flex justify-content-center align-items-center gap-2 flex-wrap my-2">
-        <button
-          className="btn btn-sm btn-outline-secondary"
-          onClick={() => setPage(1)}
-          disabled={page === 1}
-        >
-          First
-        </button>
-        <button
-          className="btn btn-sm btn-outline-secondary"
-          onClick={() => setPage(p => Math.max(1, p - 1))}
-          disabled={page === 1}
-        >
-          Previous
-        </button>
-        <input
-          type="number"
-          min={1}
-          max={totalPages}
-          value={pageInput}
-        onChange={e =>
-            setPageInput(e.target.value.replace(/\D/g, ''))
-          }
-          className="form-control form-control-sm w-auto"
-        />
-        <span>Page {page} of {totalPages}</span>
-        <button
-          className="btn btn-sm btn-outline-secondary"
-          onClick={() => {
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="d-flex justify-content-center align-items-center gap-2 flex-wrap my-2">
+          <button className="btn btn-sm btn-outline-secondary" onClick={() => setPage(1)} disabled={page === 1}>First</button>
+          <button className="btn btn-sm btn-outline-secondary" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Previous</button>
+          <input type="number" min={1} max={totalPages} value={pageInput} onChange={e => setPageInput(e.target.value.replace(/\D/g, ''))} className="form-control form-control-sm w-auto" />
+          <span>Page {page} of {totalPages}</span>
+          <button className="btn btn-sm btn-outline-secondary" onClick={() => {
             const p = Number(pageInput);
-         if (!pageInput || isNaN(p) || p < 1 || p > totalPages) {
+            if (!pageInput || isNaN(p) || p < 1 || p > totalPages) {
               setMessage('Page not found');
             } else {
               setPage(p);
-            
             }
-              setPageInput('');
-          }}
-        >
-          Go
-        </button>
-        <button
-          className="btn btn-sm btn-outline-secondary"
-          onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-          disabled={page >= totalPages}
-        >
-          Next
-        </button>
-        <button
-        className="btn btn-sm btn-outline-secondary"
-          onClick={() => setPage(totalPages)}
-          disabled={page >= totalPages}
-        >
-          Last
-        </button>
+            setPageInput('');
+          }}>Go</button>
+          <button className="btn btn-sm btn-outline-secondary" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>Next</button>
+          <button className="btn btn-sm btn-outline-secondary" onClick={() => setPage(totalPages)} disabled={page >= totalPages}>Last</button>
+        </div>
       </div>
-    </div>
-    {message && <div style={toastStyle}>{message}</div>}
+      {message && <div style={toastStyle}>{message}</div>}
     </>
   );
-};
-
-  const toastStyle: React.CSSProperties = {
-  position: 'fixed',
-  top: '1rem',
-  right: '1rem',
-  backgroundColor: '#333',
-  color: '#fff',
-  padding: '10px 20px',
-  borderRadius: '4px',
-    zIndex: 2000,
 };
 
 export default InventoryHistory;

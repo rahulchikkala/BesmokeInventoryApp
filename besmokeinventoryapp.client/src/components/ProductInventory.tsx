@@ -296,7 +296,7 @@ if (search) {
                   className={product.available < 50 ? 'table-danger' : ''}
                 >
                   <td>{product.id}</td>
-                <td style={{ overflow: 'visible' }}>
+                 <td>
                     <ExpandableCell text={product.name} maxWidth={150} />
                   </td>
                   <td>{product.type}</td>
