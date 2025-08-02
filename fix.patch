@@ -1,88 +1,71 @@
-﻿diff --git a/besmokeinventoryapp.client/src/components/LowStockAlert.tsx b/besmokeinventoryapp.client/src/components/LowStockAlert.tsx
-index eb5f7fd6208fc609855c26de89114e8100b1acc5..a9e08ef85cd9789e3c0f659a699721b6299a6ea0 100644
---- a/besmokeinventoryapp.client/src/components/LowStockAlert.tsx
-+++ b/besmokeinventoryapp.client/src/components/LowStockAlert.tsx
-@@ -1,78 +1,67 @@
- import React, { useEffect, useState } from 'react';
- import { getLowStock } from '../services/ProductService';
- import type { InventoryStatus } from '../services/ProductService';
- 
- const LowStockAlert: React.FC = () => {
-   const [lowStock, setLowStock] = useState<InventoryStatus[]>([]);
--  const [dismissed, setDismissed] = useState<boolean>(() =>
--    localStorage.getItem('lowStockDismissed') === 'true'
--  );
-   const [open, setOpen] = useState(false);
- 
-   useEffect(() => {
-     const load = async () => {
-       const data = await getLowStock();
-       setLowStock(data);
-     };
-     load();
-   }, []);
- 
--  if (dismissed || lowStock.length === 0) return null;
--
--  const dismiss = () => {
--    setDismissed(true);
--    localStorage.setItem('lowStockDismissed', 'true');
--  };
-+  if (lowStock.length === 0) return null;
- 
-   return (
-     <div style={containerStyle}>
-       <button
-         className="btn btn-warning position-relative"
-         onClick={() => setOpen((o) => !o)}
-       >
-         <i className="bi bi-bell bell-ring" />
-         <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-           {lowStock.length}
-         </span>
-       </button>
-       {open && (
-         <div style={popupStyle}>
--          <strong>Low Stock</strong>
-+          <div className="d-flex justify-content-between align-items-center">
-+            <strong>Low Stock</strong>
-+            <button className="btn-close" onClick={() => setOpen(false)} />
-+          </div>
-           <ul className="mb-2 mt-2" style={{ maxHeight: '150px', overflowY: 'auto' }}>
-             {lowStock.map((item, idx) => (
-               <li key={idx}>
-                 Product ID {item.productId}: {item.availableQuantity} left
-               </li>
-             ))}
-           </ul>
--          <button
--            className="btn btn-sm btn-outline-secondary w-100"
--            onClick={dismiss}
--          >
--            Dismiss
--          </button>
+﻿diff --git a/besmokeinventoryapp.client/src/components/ProductSearch.tsx b/besmokeinventoryapp.client/src/components/ProductSearch.tsx
+index 83cb051af4d3ff93844587e9c0be4c67ffd90f1b..493023db9ff002055463509ba3a2636f3abb08ab 100644
+--- a/besmokeinventoryapp.client/src/components/ProductSearch.tsx
++++ b/besmokeinventoryapp.client/src/components/ProductSearch.tsx
+@@ -157,60 +157,62 @@ const ProductSearch: React.FC = () => {
+             </thead>
+             <tbody>
+               {results.map((p) => (
+                 <tr key={p.id}>
+                   <td>{p.name}</td>
+                   <td>{p.type}</td>
+                   <td>{p.size}</td>
+                   <td>{p.material}</td>
+                   <td>{getQuantity(p.id)}</td>
+                   <td>
+                     <button
+                       className="btn btn-sm btn-outline-primary me-1"
+                       onClick={() => adjust(p.id, 1)}
+                     >
+                       ＋
+                     </button>
+                     <button
+                       className="btn btn-sm btn-outline-secondary"
+                       onClick={() => adjust(p.id, -1)}
+                     >
+                       －
+                     </button>
+                   </td>
+                   <td>
+                     <button
+-                      className="btn btn-sm btn-primary me-1"
++                      className="btn btn-sm btn-primary me-1 icon-btn"
+                       onClick={() => openEdit(p)}
+                     >
+-                      Edit
++                      <i className="bi bi-pencil"></i>
++                      <span className="btn-label">Edit</span>
+                     </button>
+                     <button
+-                      className="btn btn-sm btn-danger"
++                      className="btn btn-sm btn-danger icon-btn"
+                       onClick={() => setDeleteId(p.id)}
+                     >
+-                      Delete
++                      <i className="bi bi-trash"></i>
++                      <span className="btn-label">Delete</span>
+                     </button>
+                   </td>
+                 </tr>
+               ))}
+             </tbody>
+           </table>
          </div>
        )}
-     </div>
-   );
- };
  
- const containerStyle: React.CSSProperties = {
-   position: 'fixed',
-   bottom: '1rem',
-   right: '1rem',
-   zIndex: 1050,
- };
- 
- const popupStyle: React.CSSProperties = {
-   position: 'absolute',
-   bottom: '3rem',
-   right: 0,
-   backgroundColor: '#fff',
-   border: '1px solid #ccc',
-   borderRadius: '8px',
-   padding: '1rem',
-   width: '200px',
-   boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
- };
- 
+       {editingProduct && (
+         <div style={overlayStyle}>
+           <div style={modalStyle}>
+             <h3>Edit Product</h3>
+             <label>
+               Name
+               <input
+                 style={inputStyle}
+                 value={editingProduct.name}
+                 onChange={(e) =>
+                   setEditingProduct({ ...editingProduct, name: e.target.value })
+                 }
+               />
+             </label>
+             <label>
+               Type
