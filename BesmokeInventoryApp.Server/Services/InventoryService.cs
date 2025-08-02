@@ -40,10 +40,14 @@ public class InventoryService : IInventoryService
             Id = op.Id, // include ID
             ProductId = op.ProductId,
             ProductName = op.ProductName ?? string.Empty,
+            ProductType = op.ProductType ?? string.Empty,
+            Size = op.Size ?? string.Empty,
+            Material = op.Material ?? string.Empty,
             QuantityChange = op.QuantityChange,
             Timestamp = op.Timestamp,
             AvailableQuantity = op.AvailableQuantity,
-            OperationType = op.OperationType
+            OperationType = op.OperationType,
+            ChangeDescription = op.ChangeDescription
         }).ToList();
     }
     public async Task<(List<InventoryOperationDto> Operations, int TotalCount)> GetPagedOperationsAsync(PagedQueryDto query)
@@ -54,10 +58,14 @@ public class InventoryService : IInventoryService
             Id = op.Id,
             ProductId = op.ProductId,
             ProductName = op.ProductName ?? string.Empty,
+            ProductType = op.ProductType ?? string.Empty,
+            Size = op.Size ?? string.Empty,
+            Material = op.Material ?? string.Empty,
             QuantityChange = op.QuantityChange,
             Timestamp = op.Timestamp,
             AvailableQuantity = op.AvailableQuantity,
-            OperationType = op.OperationType
+            OperationType = op.OperationType,
+            ChangeDescription = op.ChangeDescription
         }).ToList();
         return (dtos, totalCount);
     }
@@ -70,14 +78,14 @@ public class InventoryService : IInventoryService
         }
 
         status.AvailableQuantity += quantityChange;
-
+        var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == productId);
         await _repo.AddOperationAsync(new InventoryOperation
         {
             ProductId = productId,
-            ProductName = (await _context.Products
-                .Where(p => p.Id == productId)
-                .Select(p => p.Name)
-                .FirstOrDefaultAsync()) ?? string.Empty,
+            ProductName = product?.Name ?? string.Empty,
+            ProductType = product?.Type ?? string.Empty,
+            Size = product?.Size ?? string.Empty,
+            Material = product?.Material ?? string.Empty,
             QuantityChange = quantityChange,
             Timestamp = DateTime.UtcNow,
             AvailableQuantity = status.AvailableQuantity,

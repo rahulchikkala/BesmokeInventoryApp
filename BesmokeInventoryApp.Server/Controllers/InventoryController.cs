@@ -23,7 +23,7 @@ public class InventoryController : ControllerBase
     public async Task<ActionResult> GetPagedOperations([FromQuery] PagedQueryDto query)
     {
         var (operations, totalCount) = await _service.GetPagedOperationsAsync(query);
-        var totalCount = operations.Count;
+       
         return Ok(new { operations, totalCount });
     }
 

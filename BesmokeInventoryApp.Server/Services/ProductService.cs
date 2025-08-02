@@ -3,7 +3,7 @@ using BesmokeInventoryApp.Server.Dtos;
 using BesmokeInventoryApp.Server.Mappers;
 using BesmokeInventoryApp.Server.Models;
 using Microsoft.EntityFrameworkCore;
-
+using System.Collections.Generic;
 public class ProductService : IProductService
 {
     private readonly IProductRepository _repo;
@@ -52,6 +52,9 @@ public class ProductService : IProductService
         {
             ProductId = product.Id,
             ProductName = product.Name ?? string.Empty,
+            ProductType = product.Type ?? string.Empty,
+            Size = product.Size ?? string.Empty,
+            Material = product.Material ?? string.Empty,
             QuantityChange = 0,
             Timestamp = DateTime.UtcNow,
             AvailableQuantity = 0,
@@ -109,8 +112,18 @@ public class ProductService : IProductService
         var existing = await _repo.GetByIdAsync(dto.Id);
         if (existing == null) return false;
 
-        var updated = ProductMapper.ToEntity(dto);
-        await _repo.UpdateAsync(updated);
+        var changes = new List<string>();
+        if (existing.Name != dto.Name) changes.Add($"Name: {existing.Name} -> {dto.Name}");
+        if (existing.Type != dto.Type) changes.Add($"Type: {existing.Type} -> {dto.Type}");
+        if (existing.Size != dto.Size) changes.Add($"Size: {existing.Size} -> {dto.Size}");
+        if (existing.Material != dto.Material) changes.Add($"Material: {existing.Material} -> {dto.Material}");
+
+        existing.Name = dto.Name;
+        existing.Type = dto.Type;
+        existing.Size = dto.Size;
+        existing.Material = dto.Material;
+
+        await _repo.UpdateAsync(existing);
         var status = await _context.InventoryStatuses.FirstOrDefaultAsync(s => s.ProductId == dto.Id);
         int available = status?.AvailableQuantity ?? 0;
 
@@ -118,10 +131,14 @@ public class ProductService : IProductService
         {
             ProductId = dto.Id,
             ProductName = dto.Name ?? string.Empty,
+            ProductType = dto.Type ?? string.Empty,
+            Size = dto.Size ?? string.Empty,
+            Material = dto.Material ?? string.Empty,
             QuantityChange = 0,
             Timestamp = DateTime.UtcNow,
             AvailableQuantity = available,
-            OperationType = "ProductUpdated"
+            OperationType = "ProductUpdated",
+            ChangeDescription = string.Join("; ", changes)
         });
 
         await _inventoryRepo.SaveChangesAsync();
@@ -146,6 +163,9 @@ public class ProductService : IProductService
         {
             ProductId = id,
             ProductName = existing.Name ?? string.Empty,
+            ProductType = existing.Type ?? string.Empty,
+            Size = existing.Size ?? string.Empty,
+            Material = existing.Material ?? string.Empty,
             QuantityChange = 0,
             Timestamp = DateTime.UtcNow,
             AvailableQuantity = available,

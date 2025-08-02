@@ -121,17 +121,24 @@ const InventoryHistory: React.FC = () => {
     const rows = filtered.map(op => {
       const product = products.find(p => p.id === op.productId);
       const name = product ? product.name : op.productName;
+       const type = product ? product.type : op.productType;
+      const size = product ? product.size : op.size;
+      const material = product ? product.material : op.material;
       return [
         op.id ?? '',
         name,
         op.productId,
+        type,
+        size,
+        material,
         op.quantityChange,
         op.availableQuantity,
         op.operationType,
+        op.changeDescription ?? '',
         new Date(op.timestamp).toLocaleString()
       ];
     });
-    const header = ['ID', 'Product', 'Product ID', 'Change', 'Available', 'Action', 'Timestamp'];
+    const header = ['ID', 'Product', 'Product ID', 'Type', 'Size', 'Material', 'Change', 'Available', 'Action', 'Details', 'Timestamp'];
     const csv = [header, ...rows].map(r => r.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -186,11 +193,15 @@ const InventoryHistory: React.FC = () => {
             <th onClick={() => handleSort('productId')}>
               Product ID {sortKey === 'productId' ? (sortAsc ? '▲' : '▼') : ''}
             </th>
+            <th>Type</th>
+            <th>Size</th>
+            <th>Material</th>
             <th onClick={() => handleSort('change')}>
               Change {sortKey === 'change' ? (sortAsc ? '▲' : '▼') : ''}
             </th>
             <th>Available</th>
             <th>Action</th>
+              <th>Details</th>
             <th onClick={() => handleSort('timestamp')}>
               Timestamp {sortKey === 'timestamp' ? (sortAsc ? '▲' : '▼') : ''}
             </th>
@@ -204,14 +215,33 @@ const InventoryHistory: React.FC = () => {
                   ? `${op.productName} (now ${product.name})`
                   : op.productName
                 : op.productName;
+                 const type = product
+                ? op.productType !== product.type
+                  ? `${op.productType} (now ${product.type})`
+                  : op.productType
+                : op.productType;
+              const size = product
+                ? op.size !== product.size
+                  ? `${op.size} (now ${product.size})`
+                  : op.size
+                : op.size;
+              const material = product
+                ? op.material !== product.material
+                  ? `${op.material} (now ${product.material})`
+                  : op.material
+                : op.material;
               return (
                 <tr key={op.id}>
                 <td>{op.id}</td>
                   <td>{name}</td>
                  <td>{op.productId}</td>
+                 <td>{type}</td>
+                  <td>{size}</td>
+                  <td>{material}</td>
                   <td>{op.quantityChange > 0 ? `+${op.quantityChange}` : op.quantityChange}</td>
                   <td>{op.availableQuantity}</td>
                   <td>{op.operationType}</td>
+                  <td>{op.changeDescription}</td>
                   <td>{new Date(op.timestamp).toLocaleString()}</td>
                 </tr>
               );

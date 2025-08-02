@@ -42,13 +42,21 @@ namespace BesmokeInventoryApp.Server.Migrations
 
                     b.Property<string>("ProductName")
                         .HasColumnType("nvarchar(max)");
+                    b.Property<string>("ProductType")
+                        .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Size")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Material")
+                        .HasColumnType("nvarchar(max)");
                     b.Property<int>("QuantityChange")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
-
+                    b.Property<string>("ChangeDescription")
+                       .HasColumnType("nvarchar(max)");
                     b.HasKey("Id");
 
                     b.ToTable("InventoryOperations");

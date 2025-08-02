@@ -19,9 +19,13 @@ export interface InventoryOperation {
   id?: number;
   productId: number;
   productName: string;
+  productType: string;
+  size: string;
+  material: string;
   quantityChange: number;
   availableQuantity: number;
   operationType: string;
+  changeDescription?: string;
   timestamp: string;
 }
 export interface PagedQuery {
