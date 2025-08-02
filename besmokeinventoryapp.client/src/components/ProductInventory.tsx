@@ -1,7 +1,12 @@
-﻿import React, { useEffect, useState } from 'react';
-import type { InventoryStatus, Product } from '../services/ProductService';
+﻿import React, { useState, useEffect, useCallback } from 'react';
+import AddProduct from './AddProduct';
+import type {
+  InventoryStatus,
+  Product,
+  ProductQuery,
+} from '../services/ProductService';
 import {
-  getProducts,
+  getPagedProducts,
   getInventory,
   adjustInventory,
   updateProduct,
@@ -14,35 +19,41 @@ const ProductInventory: React.FC = () => {
   const [sortConfig, setSortConfig] = useState<
     { key: 'type' | 'size' | 'material' | 'available'; direction: 'asc' | 'desc' } | null
   >(null);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const query: ProductQuery = { page, pageSize };
+      const [{ products, totalCount }, inventory] = await Promise.all([
+        getPagedProducts(query),
+        getInventory(),
+      ]);
+      setProducts(products);
+      setInventory(inventory);
+      setTotalCount(totalCount);
+    } catch (error) {
+      console.error('Failed to load data:', error);
+    }
+  }, [page, pageSize]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const products = await getProducts();
-        const inventory = await getInventory();
-        setProducts(products);
-        setInventory(inventory);
-      } catch (error) {
-        console.error('Failed to load data:', error);
-      }
-    };
-
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const getQuantity = (productId: number) => {
-    const item = inventory.find(i => i.productId === productId);
+    const item = inventory.find((i) => i.productId === productId);
     return item?.availableQuantity ?? 0;
   };
 
   const adjust = async (productId: number, change: number) => {
     await adjustInventory(productId, change);
-    const updatedInventory = await getInventory();
-    setInventory(updatedInventory);
+    await fetchData();
   };
 
   const handleSort = (key: 'type' | 'size' | 'material' | 'available') => {
-    setSortConfig(prev => {
+    setSortConfig((prev) => {
       if (prev && prev.key === key) {
         return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
       }
@@ -61,22 +72,18 @@ const ProductInventory: React.FC = () => {
     if (material === null) return;
     await updateProduct({ ...product, name, type, size, material });
     alert('Product updated!');
-    const updatedProducts = await getProducts();
-    setProducts(updatedProducts);
+    await fetchData();
   };
 
   const remove = async (id: number) => {
     if (confirm('Are you sure you want to delete this product?')) {
       await deleteProduct(id);
       alert('Product deleted!');
-      const updatedProducts = await getProducts();
-      setProducts(updatedProducts);
-      const updatedInventory = await getInventory();
-      setInventory(updatedInventory);
+      await fetchData();
     }
   };
 
-  const rows = products.map(p => ({ ...p, available: getQuantity(p.id) }));
+  const rows = products.map((p) => ({ ...p, available: getQuantity(p.id) }));
 
   if (sortConfig) {
     rows.sort((a, b) => {
@@ -93,23 +100,55 @@ const ProductInventory: React.FC = () => {
     });
   }
 
+  const totalPages = Math.ceil(totalCount / pageSize) || 1;
+
   return (
-    <div style={{ backgroundColor: '#f7f7f7', minHeight: '100vh', padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
+    <div
+      style={{
+        backgroundColor: '#f7f7f7',
+        minHeight: '100vh',
+        padding: '2rem',
+        fontFamily: 'Arial, sans-serif',
+      }}
+    >
+      <AddProduct onAdd={fetchData} />
       <h2 style={{ textAlign: 'center' }}>Product Inventory</h2>
-      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fff' }}>
+      <table
+        style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fff' }}
+      >
         <thead>
           <tr style={{ backgroundColor: '#ddd' }}>
             <th style={thStyle}>Name</th>
-            <th style={{ ...thStyle, cursor: 'pointer' }} onClick={() => handleSort('type')}>Type</th>
-            <th style={{ ...thStyle, cursor: 'pointer' }} onClick={() => handleSort('size')}>Size</th>
-            <th style={{ ...thStyle, cursor: 'pointer' }} onClick={() => handleSort('material')}>Material</th>
-            <th style={{ ...thStyle, cursor: 'pointer' }} onClick={() => handleSort('available')}>Available</th>
+            <th
+              style={{ ...thStyle, cursor: 'pointer' }}
+              onClick={() => handleSort('type')}
+            >
+              Type
+            </th>
+            <th
+              style={{ ...thStyle, cursor: 'pointer' }}
+              onClick={() => handleSort('size')}
+            >
+              Size
+            </th>
+            <th
+              style={{ ...thStyle, cursor: 'pointer' }}
+              onClick={() => handleSort('material')}
+            >
+              Material
+            </th>
+            <th
+              style={{ ...thStyle, cursor: 'pointer' }}
+              onClick={() => handleSort('available')}
+            >
+              Available
+            </th>
             <th style={thStyle}>Adjust</th>
             <th style={thStyle}>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map(product => (
+          {rows.map((product) => (
             <tr
               key={product.id}
               style={{
@@ -124,17 +163,44 @@ const ProductInventory: React.FC = () => {
               <td style={tdStyle}>{product.material}</td>
               <td style={tdStyle}>{product.available}</td>
               <td style={tdStyle}>
-                <button style={btnStyle} onClick={() => adjust(product.id, 1)}>＋</button>
-                <button style={btnStyle} onClick={() => adjust(product.id, -1)}>－</button>
+                <button style={btnStyle} onClick={() => adjust(product.id, 1)}>
+                  ＋
+                </button>
+                <button style={btnStyle} onClick={() => adjust(product.id, -1)}>
+                  －
+                </button>
               </td>
               <td style={tdStyle}>
-                <button style={btnStyle} onClick={() => edit(product)}>Edit</button>
-                <button style={btnStyle} onClick={() => remove(product.id)}>Delete</button>
+                <button style={btnStyle} onClick={() => edit(product)}>
+                  Edit
+                </button>
+                <button style={btnStyle} onClick={() => remove(product.id)}>
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+        <button
+          style={btnStyle}
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1}
+        >
+          Previous
+        </button>
+        <span style={{ margin: '0 1rem' }}>
+          Page {page} of {totalPages}
+        </span>
+        <button
+          style={btnStyle}
+          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          disabled={page === totalPages}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };

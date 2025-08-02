@@ -7,22 +7,42 @@ import InventoryHistory from './components/InventoryHistory';
 import { useState } from 'react';
 
 function App() {
-    const [page, setPage] = useState<'inventory' | 'operations' | 'history' | 'search'>('inventory');
+  const [page, setPage] = useState<'inventory' | 'operations' | 'history' | 'search'>('inventory');
   return (
     <div className="container mt-4">
       <h1 className="section-title text-center text-primary mb-4">Besmoke Inventory Dashboard</h1>
       <ul className="nav nav-tabs mb-3">
         <li className="nav-item">
-          <button className={`nav-link ${page === 'inventory' ? 'active' : ''}`} onClick={() => setPage('inventory')}>Inventory</button>
+          <button
+            className={`nav-link ${page === 'inventory' ? 'active' : ''}`}
+            onClick={() => setPage('inventory')}
+          >
+            Inventory
+          </button>
         </li>
         <li className="nav-item">
-          <button className={`nav-link ${page === 'operations' ? 'active' : ''}`} onClick={() => setPage('operations')}>Recent Operations</button>
+          <button
+            className={`nav-link ${page === 'operations' ? 'active' : ''}`}
+            onClick={() => setPage('operations')}
+          >
+            Recent Operations
+          </button>
         </li>
         <li className="nav-item">
-          <button className={`nav-link ${page === 'history' ? 'active' : ''}`} onClick={() => setPage('history')}>Inventory History</button>
+          <button
+            className={`nav-link ${page === 'history' ? 'active' : ''}`}
+            onClick={() => setPage('history')}
+          >
+            Inventory History
+          </button>
         </li>
         <li className="nav-item">
-          <button className={`nav-link ${page === 'search' ? 'active' : ''}`} onClick={() => setPage('search')}>Search</button>
+          <button
+            className={`nav-link ${page === 'search' ? 'active' : ''}`}
+            onClick={() => setPage('search')}
+          >
+            Search
+          </button>
         </li>
       </ul>
 

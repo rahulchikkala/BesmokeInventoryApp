@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { addProduct } from '../services/ProductService';
 
-const AddProduct: React.FC = () => {
+interface AddProductProps {
+  onAdd?: () => void;
+}
+
+const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
   const [form, setForm] = useState({
     name: '',
     type: '',
@@ -19,6 +23,7 @@ const AddProduct: React.FC = () => {
       await addProduct(form);
       alert('Product added!');
       setForm({ name: '', type: '', size: '', material: '' });
+      onAdd?.();
     } catch (error) {
       console.error(error);
       alert('Error adding product');
