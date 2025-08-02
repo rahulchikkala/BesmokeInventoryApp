@@ -10,11 +10,13 @@ const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
     name: '',
     type: '',
     size: '',
-    material: ''
+    material: '',
+    initialQuantity: 0,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: name === 'initialQuantity' ? Number(value) : value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,7 +24,7 @@ const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
     try {
       await addProduct(form);
       alert('Product added!');
-      setForm({ name: '', type: '', size: '', material: '' });
+      setForm({ name: '', type: '', size: '', material: '', initialQuantity: 0 });
       onAdd?.();
     } catch (error) {
       console.error(error);
@@ -45,6 +47,14 @@ const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
             style={{ padding: '0.5rem', flex: '1' }}
           />
         ))}
+        <input
+          name="initialQuantity"
+          type="number"
+          placeholder="Initial Stock"
+          value={form.initialQuantity}
+          onChange={handleChange}
+          style={{ padding: '0.5rem', flex: '1' }}
+        />
         <button type="submit" style={{ padding: '0.5rem 1rem' }}>Add</button>
       </div>
     </form>
