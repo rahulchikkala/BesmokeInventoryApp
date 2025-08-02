@@ -1,73 +1,104 @@
-﻿diff --git a/besmokeinventoryapp.client/src/components/ProductSearch.tsx b/besmokeinventoryapp.client/src/components/ProductSearch.tsx
-index 493023db9ff002055463509ba3a2636f3abb08ab..84518794fdeafb08cba7c51145a7cb61bd3a699d 100644
---- a/besmokeinventoryapp.client/src/components/ProductSearch.tsx
-+++ b/besmokeinventoryapp.client/src/components/ProductSearch.tsx
-@@ -157,62 +157,62 @@ const ProductSearch: React.FC = () => {
-             </thead>
-             <tbody>
-               {results.map((p) => (
-                 <tr key={p.id}>
-                   <td>{p.name}</td>
-                   <td>{p.type}</td>
-                   <td>{p.size}</td>
-                   <td>{p.material}</td>
-                   <td>{getQuantity(p.id)}</td>
-                   <td>
-                     <button
-                       className="btn btn-sm btn-outline-primary me-1"
-                       onClick={() => adjust(p.id, 1)}
-                     >
-                       ＋
-                     </button>
-                     <button
-                       className="btn btn-sm btn-outline-secondary"
-                       onClick={() => adjust(p.id, -1)}
-                     >
-                       －
-                     </button>
-                   </td>
-                   <td>
-                     <button
--                      className="btn btn-sm btn-primary me-1 icon-btn"
-+                      className="btn btn-sm btn-primary me-1 d-inline-flex align-items-center"
-                       onClick={() => openEdit(p)}
-                     >
--                      <i className="bi bi-pencil"></i>
--                      <span className="btn-label">Edit</span>
-+                      <i className="bi bi-pencil me-1"></i>
-+                      Edit
-                     </button>
-                     <button
--                      className="btn btn-sm btn-danger icon-btn"
-+                      className="btn btn-sm btn-danger d-inline-flex align-items-center"
-                       onClick={() => setDeleteId(p.id)}
-                     >
--                      <i className="bi bi-trash"></i>
--                      <span className="btn-label">Delete</span>
-+                      <i className="bi bi-trash me-1"></i>
-+                      Delete
-                     </button>
-                   </td>
-                 </tr>
-               ))}
-             </tbody>
-           </table>
-         </div>
-       )}
+﻿diff --git a/besmokeinventoryapp.client/src/index.css b/besmokeinventoryapp.client/src/index.css
+index 9e50d5039a926a200441baeda923144922c0b2e7..08461a23a15cb20436bcfe4218b2485ce70745df 100644
+--- a/besmokeinventoryapp.client/src/index.css
++++ b/besmokeinventoryapp.client/src/index.css
+@@ -1,95 +1,57 @@
+ body {
+     background: linear-gradient(135deg, #f5f7fa, #e9ecef);
+     color: #212529;
+     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+     min-height: 100vh;
+ }
  
-       {editingProduct && (
-         <div style={overlayStyle}>
-           <div style={modalStyle}>
-             <h3>Edit Product</h3>
-             <label>
-               Name
-               <input
-                 style={inputStyle}
-                 value={editingProduct.name}
-                 onChange={(e) =>
-                   setEditingProduct({ ...editingProduct, name: e.target.value })
-                 }
-               />
-             </label>
-             <label>
-               Type
+ .section-title {
+     font-weight: 600;
+     border-bottom: 2px solid #dee2e6;
+     padding-bottom: 0.5rem;
+     margin-bottom: 1rem;
+ }
+ 
+-table {
++.table {
+     background-color: #ffffff;
+ }
+ 
+-button {
+-    margin-right: 0.5rem;
+-}
+-
+-/* Icon button that expands to show a label on hover */
+-.icon-btn {
+-    display: inline-flex;
+-    align-items: center;
+-    overflow: hidden;
+-    transition: width 0.3s ease, padding 0.3s ease;
+-    width: 32px;
+-    padding: 4px;
+-}
+-
+-.icon-btn .btn-label {
+-    margin-left: 4px;
+-    white-space: nowrap;
+-    opacity: 0;
+-    transition: opacity 0.3s ease;
+-}
+-
+-.icon-btn:hover {
+-    width: auto;
+-    padding: 4px 8px;
+-}
+-
+-.icon-btn:hover .btn-label {
+-    opacity: 1;
+-}
+-
+-/* Search icon that expands to an input on hover */
++/* Search box */
+ .search-container {
+-    position: relative;
+     display: inline-flex;
+     align-items: center;
+ }
+ 
+ .search-container input {
+-    width: 0;
+-    padding: 0;
++    width: 150px;
++    padding: 2px 6px;
+     margin-left: 4px;
+     border: 1px solid #ccc;
+     border-radius: 4px;
+-    transition: width 0.3s ease, padding 0.3s ease;
+     background-color: #fff;
+ }
+-
+-.search-container:hover input,
+-.search-container input:focus {
+-    width: 150px;
+-    padding: 2px 6px;
+-}
+ @keyframes ring {
+     0% {
+         transform: rotate(0);
+     }
+ 
+     15% {
+         transform: rotate(15deg);
+     }
+ 
+     30% {
+         transform: rotate(-10deg);
+     }
+ 
+     45% {
+         transform: rotate(5deg);
+     }
+ 
+     60% {
+         transform: rotate(-5deg);
+     }
+ 
+     75% {
+         transform: rotate(0);
+     }
+ 
