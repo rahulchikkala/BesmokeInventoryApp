@@ -1,66 +1,73 @@
-﻿diff --git a/besmokeinventoryapp.client/src/components/AddProduct.tsx b/besmokeinventoryapp.client/src/components/AddProduct.tsx
-index 82831e1758885dd5d0eba381aafe3ffa04871358..b2393b38d48f935726047181547da1141e7fe3ee 100644
---- a/besmokeinventoryapp.client/src/components/AddProduct.tsx
-+++ b/besmokeinventoryapp.client/src/components/AddProduct.tsx
-@@ -14,54 +14,57 @@ const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
-     size: '',
-     material: '',
-     initialQuantity: 0,
-   });
-   const [open, setOpen] = useState(false);
+﻿diff --git a/besmokeinventoryapp.client/src/components/ProductSearch.tsx b/besmokeinventoryapp.client/src/components/ProductSearch.tsx
+index 493023db9ff002055463509ba3a2636f3abb08ab..84518794fdeafb08cba7c51145a7cb61bd3a699d 100644
+--- a/besmokeinventoryapp.client/src/components/ProductSearch.tsx
++++ b/besmokeinventoryapp.client/src/components/ProductSearch.tsx
+@@ -157,62 +157,62 @@ const ProductSearch: React.FC = () => {
+             </thead>
+             <tbody>
+               {results.map((p) => (
+                 <tr key={p.id}>
+                   <td>{p.name}</td>
+                   <td>{p.type}</td>
+                   <td>{p.size}</td>
+                   <td>{p.material}</td>
+                   <td>{getQuantity(p.id)}</td>
+                   <td>
+                     <button
+                       className="btn btn-sm btn-outline-primary me-1"
+                       onClick={() => adjust(p.id, 1)}
+                     >
+                       ＋
+                     </button>
+                     <button
+                       className="btn btn-sm btn-outline-secondary"
+                       onClick={() => adjust(p.id, -1)}
+                     >
+                       －
+                     </button>
+                   </td>
+                   <td>
+                     <button
+-                      className="btn btn-sm btn-primary me-1 icon-btn"
++                      className="btn btn-sm btn-primary me-1 d-inline-flex align-items-center"
+                       onClick={() => openEdit(p)}
+                     >
+-                      <i className="bi bi-pencil"></i>
+-                      <span className="btn-label">Edit</span>
++                      <i className="bi bi-pencil me-1"></i>
++                      Edit
+                     </button>
+                     <button
+-                      className="btn btn-sm btn-danger icon-btn"
++                      className="btn btn-sm btn-danger d-inline-flex align-items-center"
+                       onClick={() => setDeleteId(p.id)}
+                     >
+-                      <i className="bi bi-trash"></i>
+-                      <span className="btn-label">Delete</span>
++                      <i className="bi bi-trash me-1"></i>
++                      Delete
+                     </button>
+                   </td>
+                 </tr>
+               ))}
+             </tbody>
+           </table>
+         </div>
+       )}
  
-   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-     const { name, value } = e.target;
-     setForm({ ...form, [name]: name === 'initialQuantity' ? Number(value) : value });
-   };
- 
-   const handleSubmit = async (e: React.FormEvent) => {
-     e.preventDefault();
-     try {
-       await addProduct(form);
-       setForm({ name: '', type: '', size: '', material: '', initialQuantity: 0 });
-       await onAdd?.();
-       setOpen(false);
-     } catch (error) {
-       console.error(error);
-     }
-   };
- 
-   return (
-     <>
--      <button className="btn btn-success icon-btn" onClick={() => setOpen(true)}>
--        <i className="bi bi-plus-circle"></i>
--        <span className="btn-label">Add</span>
--      </button>
-+        <button
-+          className="btn btn-success d-inline-flex align-items-center"
-+          onClick={() => setOpen(true)}
-+        >
-+          <i className="bi bi-plus-circle me-1"></i>
-+          Add
-+        </button>
-       {open && (
+       {editingProduct && (
          <div style={overlayStyle}>
            <div style={modalStyle}>
-             <h4 className="section-title text-primary">Add Product</h4>
-             <form onSubmit={handleSubmit}>
-               {(['name', 'type', 'size', 'material'] as const).map((field) => (
-                 <div className="mb-2" key={field}>
-                   <input
-                     className="form-control"
-                     name={field}
-                     placeholder={field}
-                     value={form[field]}
-                     onChange={handleChange}
-                     required
-                   />
-                 </div>
-               ))}
-               <div className="mb-3">
-                 <input
-                   className="form-control"
-                   name="initialQuantity"
-                   type="number"
-                   placeholder="Initial Stock"
-                   value={form.initialQuantity}
-                   onChange={handleChange}
+             <h3>Edit Product</h3>
+             <label>
+               Name
+               <input
+                 style={inputStyle}
+                 value={editingProduct.name}
+                 onChange={(e) =>
+                   setEditingProduct({ ...editingProduct, name: e.target.value })
+                 }
+               />
+             </label>
+             <label>
+               Type

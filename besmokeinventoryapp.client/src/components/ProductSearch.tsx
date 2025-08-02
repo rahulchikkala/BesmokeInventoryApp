@@ -179,18 +179,18 @@ const ProductSearch: React.FC = () => {
                   </td>
                   <td>
                     <button
-                      className="btn btn-sm btn-primary me-1 icon-btn"
+                      className="btn btn-sm btn-primary me-1 d-inline-flex align-items-center"
                       onClick={() => openEdit(p)}
                     >
-                      <i className="bi bi-pencil"></i>
-                      <span className="btn-label">Edit</span>
+                      <i className="bi bi-pencil me-1"></i>
+                      Edit
                     </button>
                     <button
-                      className="btn btn-sm btn-danger icon-btn"
+                      className="btn btn-sm btn-danger d-inline-flex align-items-center"
                       onClick={() => setDeleteId(p.id)}
                     >
-                      <i className="bi bi-trash"></i>
-                      <span className="btn-label">Delete</span>
+                      <i className="bi bi-trash me-1"></i>
+                      Delete
                     </button>
                   </td>
                 </tr>
