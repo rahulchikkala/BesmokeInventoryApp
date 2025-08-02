@@ -1,28 +1,48 @@
 import React, { useEffect, useState } from 'react';
-import { getLowStock } from '../services/ProductService';
-import type { InventoryStatus } from '../services/ProductService';
+import { getLowStock, getProducts } from '../services/ProductService';
+import type { InventoryStatus, Product } from '../services/ProductService';
+
+interface LowStockItem extends InventoryStatus {
+  name: string;
+}
 
 const LowStockAlert: React.FC = () => {
-  const [lowStock, setLowStock] = useState<InventoryStatus[]>([]);
+ const [lowStock, setLowStock] = useState<LowStockItem[]>([]);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const load = async () => {
-      const data = await getLowStock();
+       const [stockData, products] = await Promise.all([
+        getLowStock(),
+        getProducts(),
+      ]);
+      const combined = stockData.map((s) => ({
+        ...s,
+        name: products.find((p: Product) => p.id === s.productId)?.name || `ID ${s.productId}`,
+      }));
+      setLowStock(combined);
       setLowStock(data);
     };
     load();
   }, []);
 
   if (lowStock.length === 0) return null;
-
+  const goToProduct = (id: number) => {
+    const row = document.getElementById(`product-${id}`);
+    if (row) {
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.classList.add('table-warning');
+      setTimeout(() => row.classList.remove('table-warning'), 2000);
+    }
+    setOpen(false);
+  };
   return (
     <div style={containerStyle}>
       <button
-        className="btn btn-warning position-relative"
+       className="btn btn-warning position-relative p-3"
         onClick={() => setOpen((o) => !o)}
       >
-        <i className="bi bi-bell bell-ring" />
+        <i className="bi bi-bell-fill bell-ring fs-4" />
         <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
           {lowStock.length}
         </span>
@@ -36,7 +56,12 @@ const LowStockAlert: React.FC = () => {
           <ul className="mb-2 mt-2" style={{ maxHeight: '150px', overflowY: 'auto' }}>
             {lowStock.map((item, idx) => (
               <li key={idx}>
-                Product ID {item.productId}: {item.availableQuantity} left
+               <button
+                  className="btn btn-link p-0 text-start"
+                  onClick={() => goToProduct(item.productId)}
+                >
+                  {item.name}: {item.availableQuantity} left
+                </button>
               </li>
             ))}
           </ul>

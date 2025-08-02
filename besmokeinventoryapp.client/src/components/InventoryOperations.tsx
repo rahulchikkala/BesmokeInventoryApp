@@ -31,20 +31,20 @@ const [products, setProducts] = useState<Product[]>([]);
         <p>No operations found.</p>
       ) : (
        <div className="table-responsive">
-        <table className="table table-striped table-hover table-bordered table-sm align-middle">
+        <table className="table table-striped table-hover table-bordered table-sm align-middle text-center">
           <thead className="table-light">
             <tr>
-             <th>ID</th>
-              <th>Product</th>
-               <th>Product ID</th>
-               <th>Type</th>
-              <th>Size</th>
-              <th>Material</th>
-              <th>Change</th>
-              <th>Available</th>
-              <th>Action</th>
-              <th>Details</th>
-              <th>Timestamp</th>
+             <th className="text-center">ID</th>
+              <th className="text-center">Product</th>
+               <th className="text-center">Product ID</th>
+               <th className="text-center">Type</th>
+              <th className="text-center">Size</th>
+              <th className="text-center">Material</th>
+              <th className="text-center">Change</th>
+              <th className="text-center">Available</th>
+              <th className="text-center">Action</th>
+              <th className="text-center">Details</th>
+              <th className="text-center">Timestamp</th>
             </tr>
          
    

@@ -221,36 +221,36 @@ const InventoryHistory: React.FC = () => {
         <p>No operations found.</p>
       ) : (
          <div className="table-responsive">
-        <table className="table table-striped table-hover table-bordered table-sm align-middle">
+        <table className="table table-striped table-hover table-bordered table-sm align-middle text-center">
           <thead className="table-light">
             <tr>
-<th className="sortable" onClick={() => handleSort('id')}>
+<th className="sortable text-center" onClick={() => handleSort('id')}>
               ID <i className={`bi ${getSortIcon('id')}`}></i>
             </th>
-            <th className="sortable" onClick={() => handleSort('product')}>
+            <th className="sortable text-center" onClick={() => handleSort('product')}>
               Product <i className={`bi ${getSortIcon('product')}`}></i>
             </th>
-            <th className="sortable" onClick={() => handleSort('productId')}>
+           <th className="sortable text-center" onClick={() => handleSort('productId')}>
               Product ID <i className={`bi ${getSortIcon('productId')}`}></i>
             </th>
-            <th className="sortable" onClick={() => handleSort('type')}>
+            <th className="sortable text-center" onClick={() => handleSort('type')}>
               Type <i className={`bi ${getSortIcon('type')}`}></i>
             </th>
-            <th className="sortable" onClick={() => handleSort('size')}>
+            <th className="sortable text-center" onClick={() => handleSort('size')}>
               Size <i className={`bi ${getSortIcon('size')}`}></i>
             </th>
-            <th className="sortable" onClick={() => handleSort('material')}>
+            <th className="sortable text-center" onClick={() => handleSort('material')}>
               Material <i className={`bi ${getSortIcon('material')}`}></i>
             </th>
-            <th className="sortable" onClick={() => handleSort('change')}>
+           <th className="sortable text-center" onClick={() => handleSort('change')}>
               Change <i className={`bi ${getSortIcon('change')}`}></i>
             </th>
-            <th className="sortable" onClick={() => handleSort('available')}>
+            <th className="sortable text-center" onClick={() => handleSort('available')}>
               Available <i className={`bi ${getSortIcon('available')}`}></i>
             </th>
-            <th>Action</th>
-            <th>Details</th>
-            <th className="sortable" onClick={() => handleSort('timestamp')}>
+           <th className="text-center">Action</th>
+            <th className="text-center">Details</th>
+            <th className="sortable text-center" onClick={() => handleSort('timestamp')}>
               Timestamp <i className={`bi ${getSortIcon('timestamp')}`}></i>
             </th>
             </tr>

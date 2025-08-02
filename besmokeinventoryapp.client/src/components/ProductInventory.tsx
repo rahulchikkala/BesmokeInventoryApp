@@ -160,10 +160,9 @@ if (search) {
   return (
     <>
       <div className="card shadow-sm p-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h4 className="section-title text-primary mb-0">Product Inventory</h4>
-      <div className="d-flex align-items-center gap-2">
-          <div className = "search-bar d-flex align-items-center"   >
+      <h4 className="section-title text-primary mb-3 text-center">Product Inventory</h4>
+        <div className="d-flex justify-content-center align-items-center gap-2 mb-3 flex-wrap">
+          <div className="search-bar d-flex align-items-center">
             <i className="bi bi-search"></i>
             <input
               type="text"
@@ -174,10 +173,10 @@ if (search) {
           </div>
           <AddProduct onAdd={handleProductAdded} />
         </div>
-      </div>
+
 
         <div className="table-responsive">
-          <table className="table table-striped table-hover table-bordered table-sm align-middle">
+          <table className="table table-striped table-hover table-bordered table-sm align-middle text-center">
             <thead className="table-light">
               <tr>
                 <th>ID</th>
@@ -204,6 +203,7 @@ if (search) {
               {rows.map((product) => (
                 <tr
                   key={product.id}
+                  id={`product-${product.id}`}
                   className={product.available < 50 ? 'table-danger' : ''}
                 >
                   <td>{product.id}</td>
