@@ -11,17 +11,35 @@ const InventoryHistory: React.FC = () => {
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<'id' | 'product' | 'productId' | 'change' | 'timestamp'>('timestamp');
   const [sortAsc, setSortAsc] = useState(false);
+  const [timeFilter, setTimeFilter] = useState('all');
+
+  const getRange = useCallback(() => {
+    const now = new Date();
+    switch (timeFilter) {
+      case '1h':
+        return { startTime: new Date(now.getTime() - 60 * 60 * 1000).toISOString(), endTime: now.toISOString() };
+      case '24h':
+        return { startTime: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(), endTime: now.toISOString() };
+      case '7d':
+        return { startTime: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(), endTime: now.toISOString() };
+      case '24d':
+        return { startTime: new Date(now.getTime() - 24 * 24 * 60 * 60 * 1000).toISOString(), endTime: now.toISOString() };
+      default:
+        return {};
+    }
+  }, [timeFilter]);
   const fetchAll = useCallback(async () => {
+      const range = getRange();
   if (search) {
     const [allOps, prods] = await Promise.all([
-      getInventoryOperations(),
+     getInventoryOperations(range.startTime, range.endTime),
       getProducts()
     ]);
     setOps(allOps);
     setProducts(prods);
     setTotalCount(allOps.length);
   } else {
-    const query: PagedQuery = { page, pageSize };
+    const query: PagedQuery = { page, pageSize, ...range };
     const [{ operations, totalCount }, prods] = await Promise.all([
       getPagedInventoryOperations(query),
       getProducts()
@@ -30,7 +48,7 @@ const InventoryHistory: React.FC = () => {
     setProducts(prods);
     setTotalCount(totalCount);
   }
-}, [page, pageSize, search]);
+}, [page, pageSize, search, getRange]);
 
 
    useEffect(() => {
@@ -89,10 +107,45 @@ const InventoryHistory: React.FC = () => {
       setSortAsc(true);
     }
   };
+  const exportCsv = async () => {
+    const range = getRange();
+    const allOps = await getInventoryOperations(range.startTime, range.endTime);
+    const filtered = allOps.filter(op => {
+      const product = products.find(p => p.id === op.productId);
+      const name = product ? product.name : op.productName;
+      return (
+        name.toLowerCase().includes(search.toLowerCase()) ||
+        op.productId.toString().includes(search)
+      );
+    });
+    const rows = filtered.map(op => {
+      const product = products.find(p => p.id === op.productId);
+      const name = product ? product.name : op.productName;
+      return [
+        op.id ?? '',
+        name,
+        op.productId,
+        op.quantityChange,
+        op.availableQuantity,
+        op.operationType,
+        new Date(op.timestamp).toLocaleString()
+      ];
+    });
+    const header = ['ID', 'Product', 'Product ID', 'Change', 'Available', 'Action', 'Timestamp'];
+    const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'inventory_history.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   return (
     <div className="mt-4">
       <h4>Inventory History</h4>
-     <div className="mb-2">
+    <div className="mb-2 d-flex gap-2">
         <input
           className="form-control"
           placeholder="Search by product name or ID"
@@ -102,6 +155,21 @@ const InventoryHistory: React.FC = () => {
             setPage(1);
           }}
         />
+        <select
+          className="form-select w-auto"
+          value={timeFilter}
+          onChange={e => {
+            setTimeFilter(e.target.value);
+            setPage(1);
+          }}
+        >
+          <option value="all">All Time</option>
+          <option value="1h">Last 1 Hour</option>
+          <option value="24h">Last 24 Hours</option>
+          <option value="7d">Last 7 Days</option>
+          <option value="24d">Last 24 Days</option>
+        </select>
+        <button className="btn btn-sm btn-primary" onClick={exportCsv}>Export CSV</button>
       </div>
       {filteredOps.length === 0 ? (
         <p>No operations found.</p>

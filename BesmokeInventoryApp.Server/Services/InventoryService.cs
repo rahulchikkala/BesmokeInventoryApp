@@ -32,9 +32,9 @@ public class InventoryService : IInventoryService
         }).ToList();
     }
 
-    public async Task<List<InventoryOperationDto>> GetOperationsAsync() // renamed method
+    public async Task<List<InventoryOperationDto>> GetOperationsAsync(DateTime? startTime, DateTime? endTime)
     {
-        var ops = await _repo.GetAllOperationsAsync();
+        var ops = await _repo.GetAllOperationsAsync(startTime, endTime);
         return ops.Select(op => new InventoryOperationDto
         {
             Id = op.Id, // include ID
@@ -48,7 +48,7 @@ public class InventoryService : IInventoryService
     }
     public async Task<(List<InventoryOperationDto> Operations, int TotalCount)> GetPagedOperationsAsync(PagedQueryDto query)
     {
-        var (ops, totalCount) = await _repo.GetPagedOperationsAsync(query.Page, query.PageSize);
+        var (ops, totalCount) = await _repo.GetPagedOperationsAsync(query.Page, query.PageSize, query.StartTime, query.EndTime);
         var dtos = ops.Select(op => new InventoryOperationDto
         {
             Id = op.Id,

@@ -32,13 +32,23 @@ public class InventoryRepository : IInventoryRepository
             .ToListAsync();
     }
 
-    public async Task<List<InventoryOperation>> GetAllOperationsAsync()
+    public async Task<List<InventoryOperation>> GetAllOperationsAsync(DateTime? startTime, DateTime? endTime)
     {
-        return await _context.InventoryOperations.OrderByDescending(o => o.Timestamp).ToListAsync();
+        var query = _context.InventoryOperations.AsQueryable();
+        if (startTime.HasValue)
+            query = query.Where(o => o.Timestamp >= startTime.Value);
+        if (endTime.HasValue)
+            query = query.Where(o => o.Timestamp <= endTime.Value);
+        return await query.OrderByDescending(o => o.Timestamp).ToListAsync();
     }
-    public async Task<(List<InventoryOperation> Operations, int TotalCount)> GetPagedOperationsAsync(int page, int pageSize)
+    public async Task<(List<InventoryOperation> Operations, int TotalCount)> GetPagedOperationsAsync(int page, int pageSize, DateTime? startTime, DateTime? endTime)
     {
-        var query = _context.InventoryOperations.OrderByDescending(o => o.Timestamp);
+        var query = _context.InventoryOperations.AsQueryable();
+        if (startTime.HasValue)
+            query = query.Where(o => o.Timestamp >= startTime.Value);
+        if (endTime.HasValue)
+            query = query.Where(o => o.Timestamp <= endTime.Value);
+        query = query.OrderByDescending(o => o.Timestamp);
         var totalCount = await query.CountAsync();
         var operations = await query.Skip((page - 1) * pageSize)
             .Take(pageSize)

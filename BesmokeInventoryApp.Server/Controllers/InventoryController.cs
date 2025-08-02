@@ -13,16 +13,9 @@ public class InventoryController : ControllerBase
     }
 
     [HttpGet("operations")]
-    public async Task<ActionResult<IEnumerable<InventoryOperationDto>>> GetOperations()
+    public async Task<ActionResult<IEnumerable<InventoryOperationDto>>> GetOperations([FromQuery] DateTime? startTime, [FromQuery] DateTime? endTime)
     {
-        var operations = await _service.GetOperationsAsync();
-        return Ok(operations);
-    }
-
-    [HttpGet("operations/paged")]
-    public async Task<ActionResult> GetPagedOperations([FromQuery] PagedQueryDto query)
-    {
-        var (operations, totalCount) = await _service.GetPagedOperationsAsync(query);
+        var operations = await _service.GetOperationsAsync(startTime, endTime);
         return Ok(new { operations, totalCount });
     }
 

@@ -27,6 +27,8 @@ export interface InventoryOperation {
 export interface PagedQuery {
   page: number;
   pageSize: number;
+  startTime?: string;
+  endTime?: string;
 }
 export interface ProductQuery {
   page: number;
@@ -70,8 +72,8 @@ export async function adjustInventory(productId: number, quantityChange: number)
   });
 }
 
-export async function getInventoryOperations(): Promise<InventoryOperation[]> {
-  const res = await axios.get(`${API_BASE}/inventory/operations`);
+export async function getInventoryOperations(startTime?: string, endTime?: string): Promise<InventoryOperation[]> {
+  const res = await axios.get(`${API_BASE}/inventory/operations`, { params: { startTime, endTime } });
   return res.data;
 }
 

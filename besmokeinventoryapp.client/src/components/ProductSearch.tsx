@@ -224,15 +224,20 @@ const ProductSearch: React.FC = () => {
                     <td>{p.material}</td>
                     <td>{getQuantity(p.id)}</td>
                     <td>
-                      <button className="btn btn-sm btn-outline-success me-1" onClick={() => handleAdjust(p.id, 1)}>+</button>
-                      <button className="btn btn-sm btn-outline-danger me-1" onClick={() => handleAdjust(p.id, -1)}>-</button>
-                      <button className="btn btn-sm btn-outline-primary me-1" onClick={() => handleEditClick(p)}>Edit</button>
-                      <button
-                        className="btn btn-sm btn-outline-dark"
-                        onClick={() => handleDelete(p.id)}
-                      >
-                        Delete
-                      </button>
+                      <div className="btn-group btn-group-sm" role="group">
+                        <button className="btn btn-outline-success" onClick={() => handleAdjust(p.id, 1)}>
+                          <i className="bi bi-plus"></i>
+                        </button>
+                        <button className="btn btn-outline-danger" onClick={() => handleAdjust(p.id, -1)}>
+                          <i className="bi bi-dash"></i>
+                        </button>
+                        <button className="btn btn-outline-primary" onClick={() => handleEditClick(p)}>
+                          <i className="bi bi-pencil"></i>
+                        </button>
+                        <button className="btn btn-outline-dark" onClick={() => handleDelete(p.id)}>
+                          <i className="bi bi-trash"></i>
+                        </button>
+                      </div>
                     </td>
                   </>
                 )}
