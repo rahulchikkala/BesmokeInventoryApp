@@ -1,63 +1,102 @@
-﻿diff --git a/besmokeinventoryapp.client/src/components/AddProduct.tsx b/besmokeinventoryapp.client/src/components/AddProduct.tsx
-index b5b073484029bbf58e8779a803b6aadb1b04d667..6a119f51f9a71ead7714db9ebb39c18375d64405 100644
---- a/besmokeinventoryapp.client/src/components/AddProduct.tsx
-+++ b/besmokeinventoryapp.client/src/components/AddProduct.tsx
-@@ -4,57 +4,55 @@ import { addProduct } from '../services/ProductService';
- interface AddProductProps {
-   onAdd?: () => void;
- }
+﻿diff --git a/besmokeinventoryapp.client/src/components/LowStockAlert.tsx b/besmokeinventoryapp.client/src/components/LowStockAlert.tsx
+index 3b931a3b745d92301712c12d50f6b103d8ab6c5c..eb5f7fd6208fc609855c26de89114e8100b1acc5 100644
+--- a/besmokeinventoryapp.client/src/components/LowStockAlert.tsx
++++ b/besmokeinventoryapp.client/src/components/LowStockAlert.tsx
+@@ -1,41 +1,79 @@
+-﻿import React, { useEffect, useState } from 'react';
++import React, { useEffect, useState } from 'react';
+ import { getLowStock } from '../services/ProductService';
+ import type { InventoryStatus } from '../services/ProductService';
  
- // A small button that opens a modal to add a product.
- // This keeps the main inventory list as the primary focus.
- const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
-   const [form, setForm] = useState({
-     name: '',
-     type: '',
-     size: '',
-     material: '',
-     initialQuantity: 0,
-   });
-   const [open, setOpen] = useState(false);
+ const LowStockAlert: React.FC = () => {
+   const [lowStock, setLowStock] = useState<InventoryStatus[]>([]);
+-  const [dismissed, setDismissed] = useState(false);
++  const [dismissed, setDismissed] = useState<boolean>(() =>
++    localStorage.getItem('lowStockDismissed') === 'true'
++  );
++  const [open, setOpen] = useState(false);
  
-   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-     const { name, value } = e.target;
-     setForm({ ...form, [name]: name === 'initialQuantity' ? Number(value) : value });
-   };
+   useEffect(() => {
+     const load = async () => {
+       const data = await getLowStock();
+       setLowStock(data);
+     };
+     load();
+   }, []);
  
-   const handleSubmit = async (e: React.FormEvent) => {
-     e.preventDefault();
-     try {
-       await addProduct(form);
--      alert('Product added!');
-       setForm({ name: '', type: '', size: '', material: '', initialQuantity: 0 });
--      onAdd?.();
-+      await onAdd?.();
-       setOpen(false);
-     } catch (error) {
-       console.error(error);
--      alert('Error adding product');
-     }
-   };
+   if (dismissed || lowStock.length === 0) return null;
  
++  const dismiss = () => {
++    setDismissed(true);
++    localStorage.setItem('lowStockDismissed', 'true');
++  };
++
    return (
-     <>
-       <button className="btn btn-success" onClick={() => setOpen(true)}>
-         Add Product
-       </button>
-       {open && (
-         <div style={overlayStyle}>
-           <div style={modalStyle}>
-             <h4 className="section-title text-primary">Add Product</h4>
-             <form onSubmit={handleSubmit}>
-               {(['name', 'type', 'size', 'material'] as const).map((field) => (
-                 <div className="mb-2" key={field}>
-                   <input
-                     className="form-control"
-                     name={field}
-                     placeholder={field}
-                     value={form[field]}
-                     onChange={handleChange}
-                     required
-                   />
-                 </div>
-               ))}
+-    <div
+-      className="alert alert-warning alert-dismissible"
+-      role="alert"
+-      style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 1050, maxWidth: '300px' }}
+-    >
+-      <strong>Warning:</strong> Some products are low on stock!
++    <div style={containerStyle}>
+       <button
+-        type="button"
+-        className="btn-close"
+-        aria-label="Close"
+-        onClick={() => setDismissed(true)}
+-      />
+-      <ul className="mb-0 mt-2" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+-        {lowStock.map((item, idx) => (
+-          <li key={idx}>Product ID {item.productId}: {item.availableQuantity} left</li>
+-        ))}
+-      </ul>
++        className="btn btn-warning position-relative"
++        onClick={() => setOpen((o) => !o)}
++      >
++        <i className="bi bi-bell bell-ring" />
++        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
++          {lowStock.length}
++        </span>
++      </button>
++      {open && (
++        <div style={popupStyle}>
++          <strong>Low Stock</strong>
++          <ul className="mb-2 mt-2" style={{ maxHeight: '150px', overflowY: 'auto' }}>
++            {lowStock.map((item, idx) => (
++              <li key={idx}>
++                Product ID {item.productId}: {item.availableQuantity} left
++              </li>
++            ))}
++          </ul>
++          <button
++            className="btn btn-sm btn-outline-secondary w-100"
++            onClick={dismiss}
++          >
++            Dismiss
++          </button>
++        </div>
++      )}
+     </div>
+   );
+ };
+ 
++const containerStyle: React.CSSProperties = {
++  position: 'fixed',
++  bottom: '1rem',
++  right: '1rem',
++  zIndex: 1050,
++};
++
++const popupStyle: React.CSSProperties = {
++  position: 'absolute',
++  bottom: '3rem',
++  right: 0,
++  backgroundColor: '#fff',
++  border: '1px solid #ccc',
++  borderRadius: '8px',
++  padding: '1rem',
++  width: '200px',
++  boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
++};
++
+ export default LowStockAlert;

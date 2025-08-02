@@ -1,10 +1,13 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getLowStock } from '../services/ProductService';
 import type { InventoryStatus } from '../services/ProductService';
 
 const LowStockAlert: React.FC = () => {
   const [lowStock, setLowStock] = useState<InventoryStatus[]>([]);
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState<boolean>(() =>
+    localStorage.getItem('lowStockDismissed') === 'true'
+  );
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -16,26 +19,61 @@ const LowStockAlert: React.FC = () => {
 
   if (dismissed || lowStock.length === 0) return null;
 
+  const dismiss = () => {
+    setDismissed(true);
+    localStorage.setItem('lowStockDismissed', 'true');
+  };
+
   return (
-    <div
-      className="alert alert-warning alert-dismissible"
-      role="alert"
-      style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 1050, maxWidth: '300px' }}
-    >
-      <strong>Warning:</strong> Some products are low on stock!
+    <div style={containerStyle}>
       <button
-        type="button"
-        className="btn-close"
-        aria-label="Close"
-        onClick={() => setDismissed(true)}
-      />
-      <ul className="mb-0 mt-2" style={{ maxHeight: '150px', overflowY: 'auto' }}>
-        {lowStock.map((item, idx) => (
-          <li key={idx}>Product ID {item.productId}: {item.availableQuantity} left</li>
-        ))}
-      </ul>
+        className="btn btn-warning position-relative"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <i className="bi bi-bell bell-ring" />
+        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+          {lowStock.length}
+        </span>
+      </button>
+      {open && (
+        <div style={popupStyle}>
+          <strong>Low Stock</strong>
+          <ul className="mb-2 mt-2" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+            {lowStock.map((item, idx) => (
+              <li key={idx}>
+                Product ID {item.productId}: {item.availableQuantity} left
+              </li>
+            ))}
+          </ul>
+          <button
+            className="btn btn-sm btn-outline-secondary w-100"
+            onClick={dismiss}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
     </div>
   );
+};
+
+const containerStyle: React.CSSProperties = {
+  position: 'fixed',
+  bottom: '1rem',
+  right: '1rem',
+  zIndex: 1050,
+};
+
+const popupStyle: React.CSSProperties = {
+  position: 'absolute',
+  bottom: '3rem',
+  right: 0,
+  backgroundColor: '#fff',
+  border: '1px solid #ccc',
+  borderRadius: '8px',
+  padding: '1rem',
+  width: '200px',
+  boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
 };
 
 export default LowStockAlert;
