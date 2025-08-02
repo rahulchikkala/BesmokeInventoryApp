@@ -12,6 +12,8 @@ const InventoryHistory: React.FC = () => {
   const [sortKey, setSortKey] = useState<'id' | 'product' | 'productId' | 'type' | 'size' | 'material' | 'available' | 'change' | 'timestamp'>('timestamp');
   const [sortAsc, setSortAsc] = useState(false);
   const [timeFilter, setTimeFilter] = useState('all');
+  const [message, setMessage] = useState<string | null>(null);
+  const [pageInput, setPageInput] = useState('');
 
   const getRange = useCallback(() => {
     const now = new Date();
@@ -29,32 +31,41 @@ const InventoryHistory: React.FC = () => {
     }
   }, [timeFilter]);
   const fetchAll = useCallback(async () => {
+      try{
       const range = getRange();
   if (search) {
-    const [allOps, prods] = await Promise.all([
-     getInventoryOperations(range.startTime, range.endTime),
-      getProducts()
-    ]);
-    setOps(allOps);
-    setProducts(prods);
-    setTotalCount(allOps.length);
-  } else {
-    const query: PagedQuery = { page, pageSize, ...range };
-    const [{ operations, totalCount }, prods] = await Promise.all([
-      getPagedInventoryOperations(query),
-      getProducts()
-    ]);
-    setOps(operations);
-    setProducts(prods);
-    setTotalCount(totalCount);
-  }
-}, [page, pageSize, search, getRange]);
+        const [allOps, prods] = await Promise.all([
+          getInventoryOperations(range.startTime, range.endTime),
+          getProducts(),
+        ]);
+        setOps(allOps);
+        setProducts(prods);
+        setTotalCount(allOps.length);
+      } else {
+        const query: PagedQuery = { page, pageSize, ...range };
+        const [{ operations, totalCount }, prods] = await Promise.all([
+          getPagedInventoryOperations(query),
+          getProducts(),
+        ]);
+        setOps(operations);
+        setProducts(prods);
+        setTotalCount(totalCount);
+      }
+    } catch (error) {
+      console.error('Failed to load history:', error);
+      setMessage('Failed to load history');
+    }
+  }, [page, pageSize, search, getRange]);
 
 
    useEffect(() => {
     fetchAll();
   }, [fetchAll]);
-  
+  useEffect(() => {
+    if (!message) return;
+    const timer = setTimeout(() => setMessage(null), 3000);
+    return () => clearTimeout(timer);
+  }, [message]);
   const filteredOps = ops.filter(op => {
     const product = products.find(p => p.id === op.productId);
     const name = product ? product.name : op.productName;
@@ -126,49 +137,55 @@ const InventoryHistory: React.FC = () => {
     }
   };
   const exportCsv = async () => {
-    const range = getRange();
-    const allOps = await getInventoryOperations(range.startTime, range.endTime);
-    const filtered = allOps.filter(op => {
-      const product = products.find(p => p.id === op.productId);
-      const name = product ? product.name : op.productName;
-      return (
-        name.toLowerCase().includes(search.toLowerCase()) ||
-        op.productId.toString().includes(search)
-      );
-    });
-    const rows = filtered.map(op => {
-      const product = products.find(p => p.id === op.productId);
-      const name = product ? product.name : op.productName;
-       const type = product ? product.type : op.productType;
-      const size = product ? product.size : op.size;
-      const material = product ? product.material : op.material;
-      return [
-        op.id ?? '',
-        name,
-        op.productId,
-        type,
-        size,
-        material,
-        op.quantityChange,
-        op.availableQuantity,
-        op.operationType,
-        op.changeDescription ?? '',
-        new Date(op.timestamp).toLocaleString()
-      ];
-    });
-    const header = ['ID', 'Product', 'Product ID', 'Type', 'Size', 'Material', 'Change', 'Available', 'Action', 'Details', 'Timestamp'];
-    const csv = [header, ...rows].map(r => r.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'inventory_history.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const range = getRange();
+      const allOps = await getInventoryOperations(range.startTime, range.endTime);
+      const filtered = allOps.filter(op => {
+        const product = products.find(p => p.id === op.productId);
+        const name = product ? product.name : op.productName;
+        return (
+          name.toLowerCase().includes(search.toLowerCase()) ||
+          op.productId.toString().includes(search)
+        );
+      });
+      const rows = filtered.map(op => {
+        const product = products.find(p => p.id === op.productId);
+        const name = product ? product.name : op.productName;
+        const type = product ? product.type : op.productType;
+        const size = product ? product.size : op.size;
+        const material = product ? product.material : op.material;
+        return [
+          op.id ?? '',
+          name,
+          op.productId,
+          type,
+          size,
+          material,
+          op.quantityChange,
+          op.availableQuantity,
+          op.operationType,
+          op.changeDescription ?? '',
+          new Date(op.timestamp).toLocaleString(),
+        ];
+      });
+      const header = ['ID', 'Product', 'Product ID', 'Type', 'Size', 'Material', 'Change', 'Available', 'Action', 'Details', 'Timestamp'];
+      const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'inventory_history.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Failed to export CSV:', error);
+      setMessage('Failed to export CSV');
+    }
   };
-  return (
-   <div className="card shadow-sm p-4 mt-4">
+ return (
+    <>
+    <div className="card shadow-sm p-4 mt-4">
       <h4 className="section-title text-primary">Inventory History</h4>
     <div className="mb-2 d-flex gap-2">
         <input
@@ -277,7 +294,14 @@ const InventoryHistory: React.FC = () => {
         </table>
          </div>
       )}
-      <div className="d-flex justify-content-between align-items-center my-2">
+      <div className="d-flex justify-content-center align-items-center gap-2 flex-wrap my-2">
+        <button
+          className="btn btn-sm btn-outline-secondary"
+          onClick={() => setPage(1)}
+          disabled={page === 1}
+        >
+          First
+        </button>
         <button
           className="btn btn-sm btn-outline-secondary"
           onClick={() => setPage(p => Math.max(1, p - 1))}
@@ -285,17 +309,56 @@ const InventoryHistory: React.FC = () => {
         >
           Previous
         </button>
+        <input
+          type="number"
+          min={1}
+          max={totalPages}
+          value={pageInput}
+          onChange={e => setPageInput(e.target.value)}
+          className="form-control form-control-sm w-auto"
+        />
         <span>Page {page} of {totalPages}</span>
         <button
           className="btn btn-sm btn-outline-secondary"
-          onClick={() => setPage(p => p + 1)}
+          onClick={() => {
+            const p = Number(pageInput);
+            if (!isNaN(p)) {
+              setPage(Math.min(totalPages, Math.max(1, p)));
+              setPageInput('');
+            }
+          }}
+        >
+          Go
+        </button>
+        <button
+          className="btn btn-sm btn-outline-secondary"
+          onClick={() => setPage(p => Math.min(totalPages, p + 1))}
           disabled={page >= totalPages}
         >
           Next
         </button>
+        <button
+        className="btn btn-sm btn-outline-secondary"
+          onClick={() => setPage(totalPages)}
+          disabled={page >= totalPages}
+        >
+          Last
+        </button>
       </div>
     </div>
+    {message && <div style={toastStyle}>{message}</div>}
+    </>
   );
+};
+
+  const toastStyle: React.CSSProperties = {
+  position: 'fixed',
+  top: '1rem',
+  right: '1rem',
+  backgroundColor: '#333',
+  color: '#fff',
+  padding: '10px 20px',
+  borderRadius: '4px',
 };
 
 export default InventoryHistory;

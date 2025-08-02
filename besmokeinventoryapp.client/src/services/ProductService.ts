@@ -1,6 +1,13 @@
 import axios from 'axios';
 
 const API_BASE = 'http://localhost:5050/api';
+function handleError(error: unknown): never {
+  if (axios.isAxiosError(error)) {
+    console.error('API error:', error.message);
+    throw error;
+  }
+  throw error as Error;
+}
 
 export interface Product {
   id: number;
@@ -46,56 +53,98 @@ export interface ProductQuery {
 }
 
 export async function getProducts(): Promise<Product[]> {
-  const res = await axios.get(`${API_BASE}/products`);
-  return res.data;
+  try {
+    const res = await axios.get(`${API_BASE}/products`);
+    return res.data;
+  } catch (error) {
+    handleError(error);
+  }
 }
 
 export async function getPagedProducts(query: ProductQuery): Promise<{ products: Product[]; totalCount: number }> {
-  const res = await axios.get(`${API_BASE}/products/paged`, { params: query });
-  return res.data;
+  try {
+    const res = await axios.get(`${API_BASE}/products/paged`, { params: query });
+    return res.data;
+  } catch (error) {
+    handleError(error);
+  }
 }
 
 export async function addProduct(product: NewProduct): Promise<Product> {
-  const res = await axios.post(`${API_BASE}/products`, product);
-  return res.data;
+  try {
+    const res = await axios.post(`${API_BASE}/products`, product);
+    return res.data;
+  } catch (error) {
+    handleError(error);
+  }
 }
 
 
 
 export async function updateProduct(product: Product): Promise<void> {
-  await axios.put(`${API_BASE}/products/${product.id}`, product);
+ try {
+    await axios.put(`${API_BASE}/products/${product.id}`, product);
+  } catch (error) {
+    handleError(error);
+  }
 }
 
 export async function deleteProduct(id: number): Promise<void> {
-  await axios.delete(`${API_BASE}/products/${id}`);
+  try {
+    await axios.delete(`${API_BASE}/products/${id}`);
+  } catch (error) {
+    handleError(error);
+  }
 }
 
 export async function getInventory(): Promise<InventoryStatus[]> {
-  const res = await axios.get(`${API_BASE}/inventory/status`);
-  return res.data;
+ try {
+    const res = await axios.get(`${API_BASE}/inventory/status`);
+    return res.data;
+  } catch (error) {
+    handleError(error);
+  }
 }
 
 export async function adjustInventory(productId: number, quantityChange: number): Promise<void> {
-  await axios.post(`${API_BASE}/inventory/adjust`, null, {
-    params: { productId, quantityChange }
-  });
+ try {
+    await axios.post(`${API_BASE}/inventory/adjust`, null, {
+      params: { productId, quantityChange }
+    });
+  } catch (error) {
+    handleError(error);
+  }
 }
 
 export async function getInventoryOperations(startTime?: string, endTime?: string): Promise<InventoryOperation[]> {
-  const res = await axios.get(`${API_BASE}/inventory/operations`, { params: { startTime, endTime } });
-  return res.data;
+ try {
+    const res = await axios.get(`${API_BASE}/inventory/operations`, {
+      params: { startTime, endTime }
+    });
+    return res.data;
+  } catch (error) {
+    handleError(error);
+  }
 }
 
 export async function getPagedInventoryOperations(query: PagedQuery): Promise<{ operations: InventoryOperation[]; totalCount: number }> {
-  const res = await axios.get(`${API_BASE}/inventory/operations/paged`, { params: query });
-  return res.data;
+  try {
+    const res = await axios.get(`${API_BASE}/inventory/operations/paged`, { params: query });
+    return res.data;
+  } catch (error) {
+    handleError(error);
+  }
 }
 
 export async function getLowStock(threshold = 50): Promise<InventoryStatus[]> {
-  const res = await axios.get(`${API_BASE}/inventory/lowstock`, {
-    params: { threshold }
-  });
-  return res.data;
+  try {
+    const res = await axios.get(`${API_BASE}/inventory/lowstock`, {
+      params: { threshold }
+    });
+    return res.data;
+  } catch (error) {
+    handleError(error);
+  }
 }
 
 export async function searchProducts(
@@ -116,6 +165,6 @@ export async function searchProducts(
     if (axios.isAxiosError(err) && err.response?.status === 404) {
       return [];
     }
-    throw err;
+    handleError(err);
   }
 }

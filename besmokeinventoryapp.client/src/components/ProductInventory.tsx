@@ -27,7 +27,7 @@ const ProductInventory: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<(Product & { available: number }) | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-
+  const [pageInput, setPageInput] = useState('');
   const fetchData = useCallback(async () => {
     try {
 if (search) {
@@ -51,6 +51,7 @@ if (search) {
       }
     } catch (error) {
       console.error('Failed to load data:', error);
+      setMessage('Error loading data');
     }
   }, [page, pageSize, search]);
   const handleProductAdded = async () => {
@@ -75,8 +76,14 @@ if (search) {
   };
 
   const adjust = async (productId: number, change: number) => {
-    await adjustInventory(productId, change);
-    await fetchData();
+   try {
+      await adjustInventory(productId, change);
+      await fetchData();
+      setMessage('Inventory adjusted');
+    } catch (error) {
+      console.error('Failed to adjust inventory:', error);
+      setMessage('Failed to adjust inventory');
+    }
   };
 
   const handleSort = (key: 'name' | 'type' | 'size' | 'material' | 'available') => {
@@ -94,23 +101,34 @@ if (search) {
 
   const saveEdit = async () => {
     if (!editingProduct) return;
-    const { available, ...prod } = editingProduct;
-    await updateProduct(prod);
-    const diff = available - getQuantity(editingProduct.id);
-    if (diff !== 0) {
-      await adjustInventory(editingProduct.id, diff);
-    }
-    setEditingProduct(null);
-    setMessage('Product updated!');
-    await fetchData();
+   try {
+      const { available, ...prod } = editingProduct;
+      await updateProduct(prod);
+      const diff = available - getQuantity(editingProduct.id);
+      if (diff !== 0) {
+        await adjustInventory(editingProduct.id, diff);
+      }
+      setEditingProduct(null);
+      setMessage('Product updated!');
+      await fetchData();
+    } catch (error) {
+      console.error('Failed to update product:', error);
+      setMessage('Failed to update product');
+  } 
+
   };
 
   const confirmDelete = async () => {
     if (deleteId === null) return;
-    await deleteProduct(deleteId);
-    setDeleteId(null);
-    setMessage('Product deleted!');
-    await fetchData();
+    try {
+      await deleteProduct(deleteId);
+      setDeleteId(null);
+      setMessage('Product deleted!');
+      await fetchData();
+    } catch (error) {
+      console.error('Failed to delete product:', error);
+      setMessage('Failed to delete product');
+    }
   };
 
   const rows = products.map((p) => ({ ...p, available: getQuantity(p.id) }));
@@ -238,9 +256,16 @@ if (search) {
           </table>
         </div>
         {!search && (
-          <div className="text-center mt-3">
+         <div className="text-center mt-3 d-flex justify-content-center align-items-center gap-2 flex-wrap">
             <button
-              className="btn btn-primary me-2"
+              className="btn btn-primary"
+              onClick={() => setPage(1)}
+              disabled={page === 1}
+            >
+              First
+            </button>
+            <button
+             className="btn btn-primary"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
             >
@@ -249,12 +274,39 @@ if (search) {
             <span>
               Page {page} of {totalPages}
             </span>
+            <input
+              type="number"
+              min={1}
+              max={totalPages}
+              value={pageInput}
+              onChange={(e) => setPageInput(e.target.value)}
+              className="form-control d-inline-block w-auto"
+            />
             <button
-              className="btn btn-primary ms-2"
+            className="btn btn-primary"
+              onClick={() => {
+                const p = Number(pageInput);
+                if (!isNaN(p)) {
+                  setPage(Math.min(totalPages, Math.max(1, p)));
+                  setPageInput('');
+                }
+              }}
+            >
+              Go
+            </button>
+            <button
+              className="btn btn-primary"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
             >
               Next
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={() => setPage(totalPages)}
+              disabled={page === totalPages}
+            >
+              Last
             </button>
           </div>
         )}
