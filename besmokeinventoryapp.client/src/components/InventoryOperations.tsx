@@ -37,6 +37,8 @@ const [products, setProducts] = useState<Product[]>([]);
               <th>Product</th>
                <th>Product ID</th>
               <th>Change</th>
+              <th>Available</th>
+              <th>Action</th>
               <th>Timestamp</th>
             </tr>
          
@@ -55,7 +57,9 @@ const [products, setProducts] = useState<Product[]>([]);
                <td>{op.id}</td>
                 <td>{name}</td>
                 <td>{op.productId}</td>
-                <td>{op.quantityChange}</td>
+                <td>{op.quantityChange > 0 ? `+${op.quantityChange}` : op.quantityChange}</td>
+                <td>{op.availableQuantity}</td>
+                <td>{op.operationType}</td>
                 <td>{new Date(op.timestamp).toLocaleString()}</td>
               </tr>
             );

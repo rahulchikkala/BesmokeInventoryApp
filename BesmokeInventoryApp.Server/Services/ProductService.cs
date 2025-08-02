@@ -8,12 +8,13 @@ public class ProductService : IProductService
 {
     private readonly IProductRepository _repo;
     private readonly ApplicationDbContext _context;
-    public ProductService(IProductRepository repo, ApplicationDbContext context)
+    private readonly IInventoryRepository _inventoryRepo;
+    public ProductService(IProductRepository repo, ApplicationDbContext context, IInventoryRepository inventoryRepo)
     {
         _repo = repo;
         _context = context;
+        _inventoryRepo = inventoryRepo;
     }
-
     public async Task<List<ProductDto>> GetAllProductsAsync()
     {
         var products = await _repo.GetAllAsync();
@@ -47,7 +48,17 @@ public class ProductService : IProductService
             AvailableQuantity = 0
         };
         await _context.InventoryStatuses.AddAsync(status);
-        await _context.SaveChangesAsync();
+        await _inventoryRepo.AddOperationAsync(new InventoryOperation
+        {
+            ProductId = product.Id,
+            ProductName = product.Name ?? string.Empty,
+            QuantityChange = 0,
+            Timestamp = DateTime.UtcNow,
+            AvailableQuantity = 0,
+            OperationType = "ProductAdded"
+        });
+
+        await _inventoryRepo.SaveChangesAsync();
 
         return (true, "Created");
     }
@@ -100,6 +111,20 @@ public class ProductService : IProductService
 
         var updated = ProductMapper.ToEntity(dto);
         await _repo.UpdateAsync(updated);
+        var status = await _context.InventoryStatuses.FirstOrDefaultAsync(s => s.ProductId == dto.Id);
+        int available = status?.AvailableQuantity ?? 0;
+
+        await _inventoryRepo.AddOperationAsync(new InventoryOperation
+        {
+            ProductId = dto.Id,
+            ProductName = dto.Name ?? string.Empty,
+            QuantityChange = 0,
+            Timestamp = DateTime.UtcNow,
+            AvailableQuantity = available,
+            OperationType = "ProductUpdated"
+        });
+
+        await _inventoryRepo.SaveChangesAsync();
         return true;
     }
 
@@ -109,11 +134,26 @@ public class ProductService : IProductService
         if (existing == null) return false;
         var status = await _context.InventoryStatuses
             .FirstOrDefaultAsync(s => s.ProductId == id);
+        int available = 0;
         if (status != null)
         {
+           available = status.AvailableQuantity;
             _context.InventoryStatuses.Remove(status);
         }
+       available = status?.AvailableQuantity ?? 0;
         await _repo.DeleteAsync(existing);
+        await _inventoryRepo.AddOperationAsync(new InventoryOperation
+        {
+            ProductId = id,
+            ProductName = existing.Name ?? string.Empty,
+            QuantityChange = 0,
+            Timestamp = DateTime.UtcNow,
+            AvailableQuantity = available,
+            OperationType = "ProductDeleted"
+        });
+
+      
+        await _inventoryRepo.SaveChangesAsync();
         return true;
     }
 

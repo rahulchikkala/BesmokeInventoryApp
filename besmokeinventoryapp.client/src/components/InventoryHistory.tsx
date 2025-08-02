@@ -121,6 +121,8 @@ const InventoryHistory: React.FC = () => {
             <th onClick={() => handleSort('change')}>
               Change {sortKey === 'change' ? (sortAsc ? '▲' : '▼') : ''}
             </th>
+            <th>Available</th>
+            <th>Action</th>
             <th onClick={() => handleSort('timestamp')}>
               Timestamp {sortKey === 'timestamp' ? (sortAsc ? '▲' : '▼') : ''}
             </th>
@@ -138,8 +140,10 @@ const InventoryHistory: React.FC = () => {
                 <tr key={op.id}>
                 <td>{op.id}</td>
                   <td>{name}</td>
-                  <td>{op.productId}</td>
-                  <td>{op.quantityChange}</td>
+                 <td>{op.productId}</td>
+                  <td>{op.quantityChange > 0 ? `+${op.quantityChange}` : op.quantityChange}</td>
+                  <td>{op.availableQuantity}</td>
+                  <td>{op.operationType}</td>
                   <td>{new Date(op.timestamp).toLocaleString()}</td>
                 </tr>
               );

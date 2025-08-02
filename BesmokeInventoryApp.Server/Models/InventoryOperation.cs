@@ -8,5 +8,7 @@
 
         public string? ProductName { get; set; }
         public int QuantityChange { get; set; } // Positive = in, Negative = out
+        public int AvailableQuantity { get; set; }
+        public string OperationType { get; set; } = "StockChange";
     }
 }

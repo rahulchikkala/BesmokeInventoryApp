@@ -41,7 +41,9 @@ public class InventoryService : IInventoryService
             ProductId = op.ProductId,
             ProductName = op.ProductName ?? string.Empty,
             QuantityChange = op.QuantityChange,
-            Timestamp = op.Timestamp
+            Timestamp = op.Timestamp,
+            AvailableQuantity = op.AvailableQuantity,
+            OperationType = op.OperationType
         }).ToList();
     }
     public async Task<(List<InventoryOperationDto> Operations, int TotalCount)> GetPagedOperationsAsync(PagedQueryDto query)
@@ -53,7 +55,9 @@ public class InventoryService : IInventoryService
             ProductId = op.ProductId,
             ProductName = op.ProductName ?? string.Empty,
             QuantityChange = op.QuantityChange,
-            Timestamp = op.Timestamp
+            Timestamp = op.Timestamp,
+            AvailableQuantity = op.AvailableQuantity,
+            OperationType = op.OperationType
         }).ToList();
         return (dtos, totalCount);
     }
@@ -75,7 +79,9 @@ public class InventoryService : IInventoryService
                 .Select(p => p.Name)
                 .FirstOrDefaultAsync()) ?? string.Empty,
             QuantityChange = quantityChange,
-            Timestamp = DateTime.UtcNow
+            Timestamp = DateTime.UtcNow,
+            AvailableQuantity = status.AvailableQuantity,
+            OperationType = "StockChange"
         });
 
         await _repo.SaveChangesAsync();

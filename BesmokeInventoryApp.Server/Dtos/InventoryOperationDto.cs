@@ -7,5 +7,7 @@
         public string? ProductName { get; set; }
         public int QuantityChange { get; set; }
         public DateTime Timestamp { get; set; }
+        public int AvailableQuantity { get; set; }
+        public string OperationType { get; set; } = "StockChange";
     }
 }
