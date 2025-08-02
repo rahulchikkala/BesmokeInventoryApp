@@ -9,7 +9,7 @@ const InventoryHistory: React.FC = () => {
   const [pageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState('');
-  const [sortKey, setSortKey] = useState<'id' | 'product' | 'productId' | 'change' | 'timestamp'>('timestamp');
+  const [sortKey, setSortKey] = useState<'id' | 'product' | 'productId' | 'type' | 'size' | 'material' | 'available' | 'change' | 'timestamp'>('timestamp');
   const [sortAsc, setSortAsc] = useState(false);
   const [timeFilter, setTimeFilter] = useState('all');
 
@@ -70,6 +70,12 @@ const InventoryHistory: React.FC = () => {
     let cmp = 0;
     const nameA = (products.find(p => p.id === a.productId)?.name ?? a.productName).toLowerCase();
     const nameB = (products.find(p => p.id === b.productId)?.name ?? b.productName).toLowerCase();
+    const typeA = (products.find(p => p.id === a.productId)?.type ?? a.productType).toLowerCase();
+    const typeB = (products.find(p => p.id === b.productId)?.type ?? b.productType).toLowerCase();
+    const sizeA = (products.find(p => p.id === a.productId)?.size ?? a.size).toLowerCase();
+    const sizeB = (products.find(p => p.id === b.productId)?.size ?? b.size).toLowerCase();
+    const materialA = (products.find(p => p.id === a.productId)?.material ?? a.material).toLowerCase();
+    const materialB = (products.find(p => p.id === b.productId)?.material ?? b.material).toLowerCase();
     switch (sortKey) {
       case 'id':
         cmp = (a.id ?? 0) - (b.id ?? 0);
@@ -79,6 +85,18 @@ const InventoryHistory: React.FC = () => {
         break;
       case 'productId':
         cmp = a.productId - b.productId;
+        case 'type':
+        cmp = typeA.localeCompare(typeB);
+        break;
+      case 'size':
+        cmp = sizeA.localeCompare(sizeB);
+        break;
+      case 'material':
+        cmp = materialA.localeCompare(materialB);
+        break;
+      case 'available':
+        cmp = a.availableQuantity - b.availableQuantity;
+        break;
         break;
       case 'change':
         cmp = a.quantityChange - b.quantityChange;
@@ -194,13 +212,21 @@ const InventoryHistory: React.FC = () => {
             <th onClick={() => handleSort('productId')}>
               Product ID {sortKey === 'productId' ? (sortAsc ? '▲' : '▼') : ''}
             </th>
-            <th>Type</th>
-            <th>Size</th>
-            <th>Material</th>
+           <th onClick={() => handleSort('type')}>
+              Type {sortKey === 'type' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
+            <th onClick={() => handleSort('size')}>
+              Size {sortKey === 'size' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
+            <th onClick={() => handleSort('material')}>
+              Material {sortKey === 'material' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
             <th onClick={() => handleSort('change')}>
               Change {sortKey === 'change' ? (sortAsc ? '▲' : '▼') : ''}
             </th>
-            <th>Available</th>
+        <th onClick={() => handleSort('available')}>
+              Available {sortKey === 'available' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
             <th>Action</th>
               <th>Details</th>
             <th onClick={() => handleSort('timestamp')}>
