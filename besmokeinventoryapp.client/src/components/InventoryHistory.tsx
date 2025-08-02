@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState, useCallback } from 'react';
-import { getPagedInventoryOperations, getProducts } from '../services/ProductService';
+import { getPagedInventoryOperations, getInventoryOperations, getProducts } from '../services/ProductService';
 import type { InventoryOperation, Product, PagedQuery } from '../services/ProductService';
 
 const InventoryHistory: React.FC = () => {
@@ -12,6 +12,15 @@ const InventoryHistory: React.FC = () => {
   const [sortKey, setSortKey] = useState<'id' | 'product' | 'productId' | 'change' | 'timestamp'>('timestamp');
   const [sortAsc, setSortAsc] = useState(false);
   const fetchAll = useCallback(async () => {
+  if (search) {
+    const [allOps, prods] = await Promise.all([
+      getInventoryOperations(),
+      getProducts()
+    ]);
+    setOps(allOps);
+    setProducts(prods);
+    setTotalCount(allOps.length);
+  } else {
     const query: PagedQuery = { page, pageSize };
     const [{ operations, totalCount }, prods] = await Promise.all([
       getPagedInventoryOperations(query),
@@ -20,13 +29,14 @@ const InventoryHistory: React.FC = () => {
     setOps(operations);
     setProducts(prods);
     setTotalCount(totalCount);
-  }, [page, pageSize]);
+  }
+}, [page, pageSize, search]);
 
-  useEffect(() => {
+
+   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
-
-  const totalPages = Math.ceil(totalCount / pageSize) || 1;
+  
   const filteredOps = ops.filter(op => {
     const product = products.find(p => p.id === op.productId);
     const name = product ? product.name : op.productName;
@@ -35,6 +45,9 @@ const InventoryHistory: React.FC = () => {
       op.productId.toString().includes(search)
     );
   });
+ const totalPages = search
+    ? Math.ceil(filteredOps.length / pageSize) || 1
+    : Math.ceil(totalCount / pageSize) || 1;
   const sortedOps = [...filteredOps].sort((a, b) => {
     let cmp = 0;
     const nameA = (products.find(p => p.id === a.productId)?.name ?? a.productName).toLowerCase();
@@ -58,7 +71,16 @@ const InventoryHistory: React.FC = () => {
     }
     return sortAsc ? cmp : -cmp;
   });
+  const paginatedOps = search
+    ? sortedOps.slice((page - 1) * pageSize, page * pageSize)
+    : sortedOps;
 
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(1);
+    }
+  }, [totalPages, page]);
+  
   const handleSort = (key: typeof sortKey) => {
     if (key === sortKey) {
       setSortAsc(!sortAsc);
@@ -75,7 +97,10 @@ const InventoryHistory: React.FC = () => {
           className="form-control"
           placeholder="Search by product name or ID"
           value={search}
-          onChange={e => setSearch(e.target.value)}
+        onChange={e => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
         />
       </div>
       {filteredOps.length === 0 ? (
@@ -102,7 +127,7 @@ const InventoryHistory: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-          {sortedOps.map(op => {
+          {paginatedOps.map(op => {
               const product = products.find(p => p.id === op.productId);
               const name = product
                 ? op.productName !== product.name

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   getPagedProducts,
   getInventory,
@@ -29,13 +29,12 @@ const ProductInventory: React.FC = () => {
     const query: ProductQuery = {
       page,
       pageSize,
-      sortBy: sortKey,
-      descending: !sortAsc
+ 
     };
 
     const [{ products: prods, totalCount }, inv] = await Promise.all([
       getPagedProducts(query),
-      getInventory(),
+      getInventory()
 
     ]);
     setProducts(prods);
@@ -43,11 +42,21 @@ const ProductInventory: React.FC = () => {
     setInventory(inv);
 
     setError(null);
-  }, [page, pageSize, sortKey, sortAsc]);
+  }, [page, pageSize]);
 
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
+  const sortedProducts = useMemo(() => {
+    const sorted = [...products].sort((a, b) => {
+      const aVal = String(a[sortKey]).toLowerCase();
+      const bVal = String(b[sortKey]).toLowerCase();
+      if (aVal < bVal) return sortAsc ? -1 : 1;
+      if (aVal > bVal) return sortAsc ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }, [products, sortKey, sortAsc]);
   const getQuantity = (productId: number) =>
     inventory.find(i => i.productId === productId)?.availableQuantity ?? 0;
 
@@ -67,7 +76,7 @@ const ProductInventory: React.FC = () => {
       setSortKey(key);
       setSortAsc(true);
     }
-    setPage(1);
+
   };
 
   const handleEditClick = (product: Product) => {
@@ -209,7 +218,7 @@ async function handleAddProduct() {
           </tr>
         </thead>
         <tbody>
-          {products.map(p => (
+         {sortedProducts.map(p => (
             <tr key={p.id}>
               {editingId === p.id ? (
                 <>
