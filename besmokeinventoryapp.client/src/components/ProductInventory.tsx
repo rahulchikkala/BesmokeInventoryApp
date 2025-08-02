@@ -136,8 +136,8 @@ if (search) {
       <div className="card shadow-sm p-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h4 className="section-title text-primary mb-0">Product Inventory</h4>
-       <div className="d-flex align-items-center">
-          <div className="search-container me-2">
+      <div className="d-flex align-items-center gap-2">
+          <div className="search-container">
             <i className="bi bi-search"></i>
             <input
               type="text"
@@ -203,18 +203,32 @@ if (search) {
                   <td>{product.available}</td>
                   <td>
                     <button
-                      className="btn btn-sm btn-primary me-1 icon-btn"
-                      onClick={() => openEdit(product)}
+                      className="btn btn-sm btn-outline-success me-1"
+                      onClick={() => adjust(product.id, 1)}
                     >
-                      <i className="bi bi-pencil"></i>
-                      <span className="btn-label">Edit</span>
+                      <i className="bi bi-plus"></i>
                     </button>
                     <button
-                      className="btn btn-sm btn-danger icon-btn"
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => adjust(product.id, -1)}
+                    >
+                      <i className="bi bi-dash"></i>
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      className="btn btn-sm btn-primary me-1 d-inline-flex align-items-center"
+                      onClick={() => openEdit(product)}
+                    >
+                      <i className="bi bi-pencil me-1"></i>
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-sm btn-danger d-inline-flex align-items-center"
                       onClick={() => setDeleteId(product.id)}
                     >
-                      <i className="bi bi-trash"></i>
-                      <span className="btn-label">Delete</span>
+                      <i className="bi bi-trash me-1"></i>
+                      Delete
                     </button>
                   </td>
                 </tr>
