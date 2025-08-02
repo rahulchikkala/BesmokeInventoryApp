@@ -17,7 +17,7 @@ const ProductInventory: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [inventory, setInventory] = useState<InventoryStatus[]>([]);
   const [sortConfig, setSortConfig] = useState<
-    { key: 'type' | 'size' | 'material' | 'available'; direction: 'asc' | 'desc' } | null
+    { key: 'name' | 'type' | 'size' | 'material' | 'available'; direction: 'asc' | 'desc' } | null
   >(null);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
@@ -52,7 +52,7 @@ const ProductInventory: React.FC = () => {
     await fetchData();
   };
 
-  const handleSort = (key: 'type' | 'size' | 'material' | 'available') => {
+  const handleSort = (key: 'name' | 'type' | 'size' | 'material' | 'available') => {
     setSortConfig((prev) => {
       if (prev && prev.key === key) {
         return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
@@ -70,7 +70,14 @@ const ProductInventory: React.FC = () => {
     if (size === null) return;
     const material = prompt('Material', product.material);
     if (material === null) return;
+    const availableStr = prompt('Available', getQuantity(product.id).toString());
+    if (availableStr === null) return;
+    const available = Number(availableStr);
     await updateProduct({ ...product, name, type, size, material });
+    const diff = available - getQuantity(product.id);
+    if (diff !== 0) {
+      await adjustInventory(product.id, diff);
+    }
     alert('Product updated!');
     await fetchData();
   };
@@ -118,30 +125,35 @@ const ProductInventory: React.FC = () => {
       >
         <thead>
           <tr style={{ backgroundColor: '#ddd' }}>
-            <th style={thStyle}>Name</th>
+            <th
+              style={{ ...thStyle, cursor: 'pointer' }}
+              onClick={() => handleSort('name')}
+            >
+              Name {sortConfig?.key === 'name' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+            </th>
             <th
               style={{ ...thStyle, cursor: 'pointer' }}
               onClick={() => handleSort('type')}
             >
-              Type
+              Type {sortConfig?.key === 'type' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
             </th>
             <th
               style={{ ...thStyle, cursor: 'pointer' }}
               onClick={() => handleSort('size')}
             >
-              Size
+              Size {sortConfig?.key === 'size' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
             </th>
             <th
               style={{ ...thStyle, cursor: 'pointer' }}
               onClick={() => handleSort('material')}
             >
-              Material
+              Material {sortConfig?.key === 'material' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
             </th>
             <th
               style={{ ...thStyle, cursor: 'pointer' }}
               onClick={() => handleSort('available')}
             >
-              Available
+              Available {sortConfig?.key === 'available' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
             </th>
             <th style={thStyle}>Adjust</th>
             <th style={thStyle}>Actions</th>
