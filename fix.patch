@@ -1,68 +1,60 @@
-﻿diff --git a/besmokeinventoryapp.client/src/App.tsx b/besmokeinventoryapp.client/src/App.tsx
-index 9f1a85434dc03aebe16a962c13dc6b8f49307742..7f5fcdbfb8d99d3ac1906fdb88d2ddbfac09e140 100644
---- a/besmokeinventoryapp.client/src/App.tsx
-+++ b/besmokeinventoryapp.client/src/App.tsx
-@@ -1,62 +1,52 @@
- import 'bootstrap/dist/css/bootstrap.min.css';
- import ProductInventory from './components/ProductInventory';
- import LowStockAlert from './components/LowStockAlert';
--import ProductSearch from './components/ProductSearch';
- import RecentOperations from './components/RecentOperations';
- import InventoryHistory from './components/InventoryHistory';
- import { useState } from 'react';
+﻿diff --git a/besmokeinventoryapp.client/src/components/AddProduct.tsx b/besmokeinventoryapp.client/src/components/AddProduct.tsx
+index 6a119f51f9a71ead7714db9ebb39c18375d64405..82831e1758885dd5d0eba381aafe3ffa04871358 100644
+--- a/besmokeinventoryapp.client/src/components/AddProduct.tsx
++++ b/besmokeinventoryapp.client/src/components/AddProduct.tsx
+@@ -14,52 +14,53 @@ const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
+     size: '',
+     material: '',
+     initialQuantity: 0,
+   });
+   const [open, setOpen] = useState(false);
  
- function App() {
--  const [page, setPage] = useState<'inventory' | 'operations' | 'history' | 'search'>('inventory');
-+  const [page, setPage] = useState<'inventory' | 'operations' | 'history'>('inventory');
+   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+     const { name, value } = e.target;
+     setForm({ ...form, [name]: name === 'initialQuantity' ? Number(value) : value });
+   };
+ 
+   const handleSubmit = async (e: React.FormEvent) => {
+     e.preventDefault();
+     try {
+       await addProduct(form);
+       setForm({ name: '', type: '', size: '', material: '', initialQuantity: 0 });
+       await onAdd?.();
+       setOpen(false);
+     } catch (error) {
+       console.error(error);
+     }
+   };
+ 
    return (
-     <div className="container mt-4">
-       <h1 className="section-title text-center text-primary mb-4">Besmoke Inventory Dashboard</h1>
-       <ul className="nav nav-tabs mb-3">
-         <li className="nav-item">
-           <button
-             className={`nav-link ${page === 'inventory' ? 'active' : ''}`}
-             onClick={() => setPage('inventory')}
-           >
-             Inventory
-           </button>
-         </li>
-         <li className="nav-item">
-           <button
-             className={`nav-link ${page === 'operations' ? 'active' : ''}`}
-             onClick={() => setPage('operations')}
-           >
-             Recent Operations
-           </button>
-         </li>
-         <li className="nav-item">
-           <button
-             className={`nav-link ${page === 'history' ? 'active' : ''}`}
-             onClick={() => setPage('history')}
-           >
-             Inventory History
-           </button>
-         </li>
--        <li className="nav-item">
--          <button
--            className={`nav-link ${page === 'search' ? 'active' : ''}`}
--            onClick={() => setPage('search')}
--          >
--            Search
--          </button>
--        </li>
-       </ul>
- 
-       {page === 'inventory' && (
-         <>
-           <LowStockAlert />
-           <ProductInventory />
-         </>
-       )}
-       {page === 'operations' && <RecentOperations />}
-       {page === 'history' && <InventoryHistory />}
--      {page === 'search' && <ProductSearch />}
-     </div>
-   );
- }
- 
- export default App;
+     <>
+-      <button className="btn btn-success" onClick={() => setOpen(true)}>
+-        Add Product
++      <button className="btn btn-success icon-btn" onClick={() => setOpen(true)}>
++        <i className="bi bi-plus-circle"></i>
++        <span className="btn-label">Add</span>
+       </button>
+       {open && (
+         <div style={overlayStyle}>
+           <div style={modalStyle}>
+             <h4 className="section-title text-primary">Add Product</h4>
+             <form onSubmit={handleSubmit}>
+               {(['name', 'type', 'size', 'material'] as const).map((field) => (
+                 <div className="mb-2" key={field}>
+                   <input
+                     className="form-control"
+                     name={field}
+                     placeholder={field}
+                     value={form[field]}
+                     onChange={handleChange}
+                     required
+                   />
+                 </div>
+               ))}
+               <div className="mb-3">
+                 <input
+                   className="form-control"
+                   name="initialQuantity"
+                   type="number"
+                   placeholder="Initial Stock"
+                   value={form.initialQuantity}

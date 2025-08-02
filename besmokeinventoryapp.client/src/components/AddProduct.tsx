@@ -36,8 +36,9 @@ const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
 
   return (
     <>
-      <button className="btn btn-success" onClick={() => setOpen(true)}>
-        Add Product
+      <button className="btn btn-success icon-btn" onClick={() => setOpen(true)}>
+        <i className="bi bi-plus-circle"></i>
+        <span className="btn-label">Add</span>
       </button>
       {open && (
         <div style={overlayStyle}>
