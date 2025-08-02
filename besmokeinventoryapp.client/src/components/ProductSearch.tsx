@@ -1,13 +1,22 @@
 ﻿import React, { useState } from 'react';
-import { searchProducts } from '../services/ProductService';
-import type { Product } from '../services/ProductService';
-
+import {
+  searchProducts,
+  getInventory,
+  deleteProduct,
+  updateProduct,
+  adjustInventory
+} from '../services/ProductService';
+import type { Product, InventoryStatus } from '../services/ProductService';
 const ProductSearch: React.FC = () => {
   const [term, setTerm] = useState('');
   const [typeTerm, setTypeTerm] = useState('');
   const [sizeTerm, setSizeTerm] = useState('');
   const [materialTerm, setMaterialTerm] = useState('');
   const [results, setResults] = useState<Product[]>([]);
+  const [inventory, setInventory] = useState<InventoryStatus[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editProduct, setEditProduct] = useState<Partial<Product>>({});
+  const [editQuantity, setEditQuantity] = useState<number>(0);
   const [sortKey, setSortKey] = useState<keyof Product>('name');
   const [sortAsc, setSortAsc] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,8 +26,12 @@ const ProductSearch: React.FC = () => {
     asc: boolean = sortAsc
   ) => {
     try {
-      const data = await searchProducts(term, typeTerm, sizeTerm, materialTerm, sort, !asc);
+      const [data, inv] = await Promise.all([
+        searchProducts(term, typeTerm, sizeTerm, materialTerm, sort, !asc),
+        getInventory()
+      ]);
       setResults(data);
+      setInventory(inv);
       setSearched(true);
       setError(null);
     } catch {
@@ -36,6 +49,50 @@ const ProductSearch: React.FC = () => {
     setSortKey(key);
     setSortAsc(asc);
     await loadResults(key, asc);
+  };
+  const getQuantity = (productId: number) =>
+    inventory.find(i => i.productId === productId)?.availableQuantity ?? 0;
+
+  const handleDelete = async (id: number) => {
+    await deleteProduct(id);
+    await loadResults();
+  };
+
+  const handleAdjust = async (id: number, delta: number) => {
+    await adjustInventory(id, delta);
+    await loadResults();
+  };
+
+  const handleEditClick = (product: Product) => {
+    setEditingId(product.id);
+    setEditProduct({ ...product });
+    setEditQuantity(getQuantity(product.id));
+    setError(null);
+  };
+
+  const handleEditChange = (key: keyof Product, value: string) => {
+    setEditProduct(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editProduct.id || !editProduct.name || !editProduct.type || !editProduct.size || !editProduct.material) {
+      setError('All fields are required.');
+      return;
+    }
+
+    try {
+      await updateProduct(editProduct as Product);
+      const currentQty = getQuantity(editProduct.id);
+      if (editProduct.id && editQuantity !== currentQty) {
+        await adjustInventory(editProduct.id, editQuantity - currentQty);
+      }
+      setEditingId(null);
+      setEditProduct({});
+      setEditQuantity(0);
+      await loadResults();
+    } catch {
+      setError('Update failed');
+    }
   };
 
   return (
@@ -100,15 +157,85 @@ const ProductSearch: React.FC = () => {
               <th onClick={() => handleSort('material')}>
                 Material {sortKey === 'material' ? (sortAsc ? '▲' : '▼') : ''}
               </th>
+              <th>Stock</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {results.map(p => (
               <tr key={p.id}>
-                <td>{p.name}</td>
-                <td>{p.type}</td>
-                <td>{p.size}</td>
-                <td>{p.material}</td>
+              {editingId === p.id ? (
+                  <>
+                    <td>
+                      <input
+                        className="form-control form-control-sm"
+                        value={editProduct.name || ''}
+                        onChange={e => handleEditChange('name', e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="form-control form-control-sm"
+                        value={editProduct.type || ''}
+                        onChange={e => handleEditChange('type', e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="form-control form-control-sm"
+                        value={editProduct.size || ''}
+                        onChange={e => handleEditChange('size', e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="form-control form-control-sm"
+                        value={editProduct.material || ''}
+                        onChange={e => handleEditChange('material', e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        className="form-control form-control-sm"
+                        value={editQuantity}
+                        onChange={e => setEditQuantity(parseInt(e.target.value) || 0)}
+                      />
+                    </td>
+                    <td>
+                      <button className="btn btn-sm btn-success me-1" onClick={handleSaveEdit}>Save</button>
+                      <button
+                        className="btn btn-sm btn-secondary"
+                        onClick={() => {
+                          setEditingId(null);
+                          setEditProduct({});
+                          setEditQuantity(0);
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </td>
+                  </>
+                ) : (
+                  <>
+                    <td>{p.name}</td>
+                    <td>{p.type}</td>
+                    <td>{p.size}</td>
+                    <td>{p.material}</td>
+                    <td>{getQuantity(p.id)}</td>
+                    <td>
+                      <button className="btn btn-sm btn-outline-success me-1" onClick={() => handleAdjust(p.id, 1)}>+</button>
+                      <button className="btn btn-sm btn-outline-danger me-1" onClick={() => handleAdjust(p.id, -1)}>-</button>
+                      <button className="btn btn-sm btn-outline-primary me-1" onClick={() => handleEditClick(p)}>Edit</button>
+                      <button
+                        className="btn btn-sm btn-outline-dark"
+                        onClick={() => handleDelete(p.id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </>
+                )}
               </tr>
             ))}
           </tbody>

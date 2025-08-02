@@ -16,6 +16,7 @@ const ProductInventory: React.FC = () => {
   
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editProduct, setEditProduct] = useState<Partial<Product>>({});
+  const [editQuantity, setEditQuantity] = useState<number>(0);
   const [newProduct, setNewProduct] = useState<Partial<Product>>({});
   const [error, setError] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<keyof Product>('name');
@@ -72,6 +73,7 @@ const ProductInventory: React.FC = () => {
   const handleEditClick = (product: Product) => {
     setEditingId(product.id);
     setEditProduct({ ...product });
+    setEditQuantity(getQuantity(product.id));
     setError(null);
   };
   const handleEditChange = (key: keyof Product, value: string) => {
@@ -99,8 +101,13 @@ const ProductInventory: React.FC = () => {
 
     try {
       await updateProduct(editProduct as Product);
+      const currentQty = getQuantity(editProduct.id);
+      if (editProduct.id && editQuantity !== currentQty) {
+        await adjustInventory(editProduct.id, editQuantity - currentQty);
+      }
       setEditingId(null);
       setEditProduct({});
+      setEditQuantity(0);
       await fetchAll();
     } catch {
       setError('Update failed.');
@@ -235,10 +242,26 @@ async function handleAddProduct() {
                       onChange={e => handleEditChange('material', e.target.value)}
                     />
                   </td>
-                  <td>{getQuantity(p.id)}</td>
+                 <td>
+                    <input
+                      type="number"
+                      className="form-control form-control-sm"
+                      value={editQuantity}
+                      onChange={e => setEditQuantity(parseInt(e.target.value) || 0)}
+                    />
+                  </td>
                   <td>
                     <button className="btn btn-sm btn-success me-1" onClick={handleSaveEdit}>Save</button>
-                    <button className="btn btn-sm btn-secondary" onClick={() => setEditingId(null)}>Cancel</button>
+                    <button
+                      className="btn btn-sm btn-secondary"
+                      onClick={() => {
+                        setEditingId(null);
+                        setEditProduct({});
+                        setEditQuantity(0);
+                      }}
+                    >
+                      Cancel
+                    </button>
                   </td>
                 </>
               ) : (

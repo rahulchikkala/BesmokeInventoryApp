@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
 import { getPagedInventoryOperations, getProducts } from '../services/ProductService';
 import type { InventoryOperation, Product, PagedQuery } from '../services/ProductService';
 
@@ -9,6 +9,8 @@ const InventoryHistory: React.FC = () => {
   const [pageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState('');
+  const [sortKey, setSortKey] = useState<'id' | 'product' | 'productId' | 'change' | 'timestamp'>('timestamp');
+  const [sortAsc, setSortAsc] = useState(false);
   const fetchAll = useCallback(async () => {
     const query: PagedQuery = { page, pageSize };
     const [{ operations, totalCount }, prods] = await Promise.all([
@@ -33,6 +35,38 @@ const InventoryHistory: React.FC = () => {
       op.productId.toString().includes(search)
     );
   });
+  const sortedOps = [...filteredOps].sort((a, b) => {
+    let cmp = 0;
+    const nameA = (products.find(p => p.id === a.productId)?.name ?? a.productName).toLowerCase();
+    const nameB = (products.find(p => p.id === b.productId)?.name ?? b.productName).toLowerCase();
+    switch (sortKey) {
+      case 'id':
+        cmp = (a.id ?? 0) - (b.id ?? 0);
+        break;
+      case 'product':
+        cmp = nameA.localeCompare(nameB);
+        break;
+      case 'productId':
+        cmp = a.productId - b.productId;
+        break;
+      case 'change':
+        cmp = a.quantityChange - b.quantityChange;
+        break;
+      case 'timestamp':
+        cmp = new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+        break;
+    }
+    return sortAsc ? cmp : -cmp;
+  });
+
+  const handleSort = (key: typeof sortKey) => {
+    if (key === sortKey) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortKey(key);
+      setSortAsc(true);
+    }
+  };
   return (
     <div className="mt-4">
       <h4>Inventory History</h4>
@@ -50,15 +84,25 @@ const InventoryHistory: React.FC = () => {
         <table className="table table-bordered table-sm">
           <thead className="table-light">
             <tr>
-            <th>ID</th>
-              <th>Product</th>
-              <th>Product ID</th>
-              <th>Change</th>
-              <th>Timestamp</th>
+<th onClick={() => handleSort('id')}>
+              ID {sortKey === 'id' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
+            <th onClick={() => handleSort('product')}>
+              Product {sortKey === 'product' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
+            <th onClick={() => handleSort('productId')}>
+              Product ID {sortKey === 'productId' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
+            <th onClick={() => handleSort('change')}>
+              Change {sortKey === 'change' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
+            <th onClick={() => handleSort('timestamp')}>
+              Timestamp {sortKey === 'timestamp' ? (sortAsc ? '▲' : '▼') : ''}
+            </th>
             </tr>
           </thead>
           <tbody>
-          {filteredOps.map(op => {
+          {sortedOps.map(op => {
               const product = products.find(p => p.id === op.productId);
               const name = product
                 ? op.productName !== product.name
