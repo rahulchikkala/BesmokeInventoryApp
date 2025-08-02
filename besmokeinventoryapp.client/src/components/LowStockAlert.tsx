@@ -6,8 +6,12 @@ interface LowStockItem extends InventoryStatus {
   name: string;
 }
 
-const LowStockAlert: React.FC = () => {
- const [lowStock, setLowStock] = useState<LowStockItem[]>([]);
+interface Props {
+  onNavigate?: (id: number) => void;
+}
+
+const LowStockAlert: React.FC<Props> = ({ onNavigate }) => {
+  const [lowStock, setLowStock] = useState<LowStockItem[]>([]);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -18,31 +22,37 @@ const LowStockAlert: React.FC = () => {
       ]);
       const combined = stockData.map((s) => ({
         ...s,
-        name: products.find((p: Product) => p.id === s.productId)?.name || `ID ${s.productId}`,
+        name:
+          products.find((p: Product) => p.id === s.productId)?.name ||
+          `ID ${s.productId}`,
       }));
       setLowStock(combined);
-      setLowStock(data);
+
     };
     load();
   }, []);
 
   if (lowStock.length === 0) return null;
   const goToProduct = (id: number) => {
-    const row = document.getElementById(`product-${id}`);
-    if (row) {
-      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      row.classList.add('table-warning');
-      setTimeout(() => row.classList.remove('table-warning'), 2000);
+   if (onNavigate) {
+      onNavigate(id);
+    } else {
+      const row = document.getElementById(`product-${id}`);
+      if (row) {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        row.classList.add('table-warning');
+        setTimeout(() => row.classList.remove('table-warning'), 2000);
+      }
     }
     setOpen(false);
   };
   return (
     <div style={containerStyle}>
       <button
-       className="btn btn-warning position-relative p-3"
+     className="btn btn-warning btn-sm position-relative p-2"
         onClick={() => setOpen((o) => !o)}
       >
-        <i className="bi bi-bell-fill bell-ring fs-4" />
+        <i className="bi bi-bell-fill bell-ring fs-6" />
         <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
           {lowStock.length}
         </span>
@@ -53,7 +63,7 @@ const LowStockAlert: React.FC = () => {
             <strong>Low Stock</strong>
             <button className="btn-close" onClick={() => setOpen(false)} />
           </div>
-          <ul className="mb-2 mt-2" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+          <ul className="mb-2 mt-2" style={{ maxHeight: '250px', overflowY: 'auto' }}>
             {lowStock.map((item, idx) => (
               <li key={idx}>
                <button
@@ -86,7 +96,7 @@ const popupStyle: React.CSSProperties = {
   border: '1px solid #ccc',
   borderRadius: '8px',
   padding: '1rem',
-  width: '200px',
+  width: '300px',
   boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
 };
 

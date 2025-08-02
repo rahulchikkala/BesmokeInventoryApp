@@ -318,7 +318,9 @@ const InventoryHistory: React.FC = () => {
           min={1}
           max={totalPages}
           value={pageInput}
-          onChange={e => setPageInput(e.target.value)}
+        onChange={e =>
+            setPageInput(e.target.value.replace(/\D/g, ''))
+          }
           className="form-control form-control-sm w-auto"
         />
         <span>Page {page} of {totalPages}</span>
@@ -326,10 +328,13 @@ const InventoryHistory: React.FC = () => {
           className="btn btn-sm btn-outline-secondary"
           onClick={() => {
             const p = Number(pageInput);
-            if (!isNaN(p)) {
-              setPage(Math.min(totalPages, Math.max(1, p)));
-              setPageInput('');
+         if (!pageInput || isNaN(p) || p < 1 || p > totalPages) {
+              setMessage('Page not found');
+            } else {
+              setPage(p);
+            
             }
+              setPageInput('');
           }}
         >
           Go

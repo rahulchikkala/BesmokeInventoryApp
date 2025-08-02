@@ -7,47 +7,60 @@ import { useState } from 'react';
 
 function App() {
   const [page, setPage] = useState<'inventory' | 'operations' | 'history'>('inventory');
+  const [highlightId, setHighlightId] = useState<number | null>(null);
+
+  const handleNavigate = (id: number) => {
+    setHighlightId(id);
+    setPage('inventory');
+  };
   return (
     <div className="container mt-4">
-      <h1 className="main-heading mb-4 d-flex justify-content-center align-items-center">
-        <i className="bi bi-box-seam me-2"></i>
-        Besmoke Inventory Dashboard
-      </h1>
-      <ul className="nav nav-tabs mb-3">
-        <li className="nav-item">
-          <button
-            className={`nav-link ${page === 'inventory' ? 'active' : ''}`}
-            onClick={() => setPage('inventory')}
-          >
-            Inventory
-          </button>
-        </li>
-        <li className="nav-item">
-          <button
-            className={`nav-link ${page === 'operations' ? 'active' : ''}`}
-            onClick={() => setPage('operations')}
-          >
-            Recent Operations
-          </button>
-        </li>
-        <li className="nav-item">
-          <button
-            className={`nav-link ${page === 'history' ? 'active' : ''}`}
-            onClick={() => setPage('history')}
-          >
-            Inventory History
-          </button>
-        </li>
-      </ul>
+    <div className="sticky-top bg-white pb-2">
+        <h1
+          className="main-heading mb-4 d-flex justify-content-center align-items-center"
+          style={{ cursor: 'pointer' }}
+          onClick={() => setPage('inventory')}
+        >
+          <i className="bi bi-box-seam me-2"></i>
+          Besmoke Inventory Dashboard
+        </h1>
+        <ul className="nav nav-tabs mb-3">
+          <li className="nav-item">
+            <button
+              className={`nav-link ${page === 'inventory' ? 'active' : ''}`}
+              onClick={() => setPage('inventory')}
+            >
+              Inventory
+            </button>
+          </li>
+          <li className="nav-item">
+            <button
+              className={`nav-link ${page === 'operations' ? 'active' : ''}`}
+              onClick={() => setPage('operations')}
+            >
+              Recent Operations
+            </button>
+          </li>
+          <li className="nav-item">
+            <button
+              className={`nav-link ${page === 'history' ? 'active' : ''}`}
+              onClick={() => setPage('history')}
+            >
+              Inventory History
+            </button>
+          </li>
+        </ul>
+      </div>
 
       {page === 'inventory' && (
-        <>
-          <LowStockAlert />
-          <ProductInventory />
-        </>
+        <ProductInventory
+          highlightId={highlightId}
+          onHighlightDone={() => setHighlightId(null)}
+        />
       )}
       {page === 'operations' && <RecentOperations />}
       {page === 'history' && <InventoryHistory />}
+       <LowStockAlert onNavigate={handleNavigate} />
     </div>
   );
 }

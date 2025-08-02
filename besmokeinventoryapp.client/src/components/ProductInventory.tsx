@@ -14,7 +14,12 @@ import {
   searchProducts,
 } from '../services/ProductService';
 
-const ProductInventory: React.FC = () => {
+interface Props {
+  highlightId?: number | null;
+  onHighlightDone?: () => void;
+}
+
+const ProductInventory: React.FC<Props> = ({ highlightId, onHighlightDone }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [inventory, setInventory] = useState<InventoryStatus[]>([]);
   const [sortConfig, setSortConfig] = useState<
@@ -69,7 +74,17 @@ if (search) {
     const timer = setTimeout(() => setMessage(null), 3000);
     return () => clearTimeout(timer);
   }, [message]);
-
+  useEffect(() => {
+    if (highlightId != null) {
+      const row = document.getElementById(`product-${highlightId}`);
+      if (row) {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        row.classList.add('table-warning');
+        setTimeout(() => row.classList.remove('table-warning'), 2000);
+      }
+      onHighlightDone?.();
+    }
+  }, [highlightId, onHighlightDone]);
   const getQuantity = (productId: number) => {
     const item = inventory.find((i) => i.productId === productId);
     return item?.availableQuantity ?? 0;
@@ -176,6 +191,9 @@ if (search) {
 
 
         <div className="table-responsive">
+        {search && rows.length === 0 ? (
+            <p className="text-center my-3">No results found.</p>
+          ) : (
           <table className="table table-striped table-hover table-bordered table-sm align-middle text-center">
             <thead className="table-light">
               <tr>
@@ -247,6 +265,7 @@ if (search) {
               ))}
             </tbody>
           </table>
+          )}
         </div>
         {!search && (
          <div className="text-center mt-3 d-flex justify-content-center align-items-center gap-2 flex-wrap">
@@ -272,17 +291,21 @@ if (search) {
               min={1}
               max={totalPages}
               value={pageInput}
-              onChange={(e) => setPageInput(e.target.value)}
+              onChange={(e) =>
+                setPageInput(e.target.value.replace(/\D/g, ''))
+              }
               className="form-control d-inline-block w-auto"
             />
             <button
             className="btn btn-primary"
               onClick={() => {
                 const p = Number(pageInput);
-                if (!isNaN(p)) {
-                  setPage(Math.min(totalPages, Math.max(1, p)));
-                  setPageInput('');
+                if (!pageInput || isNaN(p) || p < 1 || p > totalPages) {
+                  setMessage('Page not found');
+                } else {
+                  setPage(p);
                 }
+                setPageInput('');
               }}
             >
               Go
