@@ -155,8 +155,8 @@ async function handleAddProduct() {
   }
 
   return (
-    <div className="container mt-4">
-      <h2 className="mb-3">Product Inventory</h2>
+   <div className="card shadow-sm p-4 mt-4">
+      <h2 className="section-title text-primary">Product Inventory</h2>
       {error && <div className="alert alert-danger">{error}</div>}
 
       <div className="row mb-3">
@@ -197,7 +197,8 @@ async function handleAddProduct() {
         </div>
       </div>
 
-      <table className="table table-bordered table-sm">
+     <div className="table-responsive">
+      <table className="table table-striped table-hover table-bordered table-sm align-middle">
         <thead className="table-light">
           <tr>
           <th>ID</th>
@@ -303,6 +304,7 @@ async function handleAddProduct() {
           ))}
         </tbody>
       </table>
+       </div>
       <div className="d-flex justify-content-between align-items-center my-2">
         <button
           className="btn btn-sm btn-outline-secondary"

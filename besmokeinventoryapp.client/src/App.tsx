@@ -10,7 +10,7 @@ function App() {
     const [page, setPage] = useState<'inventory' | 'operations' | 'history' | 'search'>('inventory');
   return (
     <div className="container mt-4">
-      <h1 className="mb-4">Besmoke Inventory Dashboard</h1>
+      <h1 className="section-title text-center text-primary mb-4">Besmoke Inventory Dashboard</h1>
       <ul className="nav nav-tabs mb-3">
         <li className="nav-item">
           <button className={`nav-link ${page === 'inventory' ? 'active' : ''}`} onClick={() => setPage('inventory')}>Inventory</button>

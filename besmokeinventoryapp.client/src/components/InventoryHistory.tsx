@@ -150,8 +150,8 @@ const InventoryHistory: React.FC = () => {
     document.body.removeChild(link);
   };
   return (
-    <div className="mt-4">
-      <h4>Inventory History</h4>
+   <div className="card shadow-sm p-4 mt-4">
+      <h4 className="section-title text-primary">Inventory History</h4>
     <div className="mb-2 d-flex gap-2">
         <input
           className="form-control"
@@ -181,7 +181,8 @@ const InventoryHistory: React.FC = () => {
       {filteredOps.length === 0 ? (
         <p>No operations found.</p>
       ) : (
-        <table className="table table-bordered table-sm">
+         <div className="table-responsive">
+        <table className="table table-striped table-hover table-bordered table-sm align-middle">
           <thead className="table-light">
             <tr>
 <th onClick={() => handleSort('id')}>
@@ -248,6 +249,7 @@ const InventoryHistory: React.FC = () => {
             })}
           </tbody>
         </table>
+         </div>
       )}
       <div className="d-flex justify-content-between align-items-center my-2">
         <button

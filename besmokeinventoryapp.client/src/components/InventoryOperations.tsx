@@ -25,12 +25,13 @@ const [products, setProducts] = useState<Product[]>([]);
 
 
   return (
-    <div className="mt-4">
-      <h4>{title}</h4>
+    <div className="card shadow-sm p-4 mt-4">
+      <h4 className="section-title text-primary">{title}</h4>
       {ops.length === 0 ? (
         <p>No operations found.</p>
       ) : (
-        <table className="table table-bordered table-sm">
+       <div className="table-responsive">
+        <table className="table table-striped table-hover table-bordered table-sm align-middle">
           <thead className="table-light">
             <tr>
              <th>ID</th>
@@ -89,6 +90,7 @@ const [products, setProducts] = useState<Product[]>([]);
           })}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );

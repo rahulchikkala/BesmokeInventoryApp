@@ -96,8 +96,8 @@ const ProductSearch: React.FC = () => {
   };
 
   return (
-    <div className="card p-3">
-      <h4 className="mb-3">Search Products</h4>
+    <div className="card shadow-sm p-4">
+      <h4 className="section-title text-primary">Search Products</h4>
       <form onSubmit={handleSearch} className="row g-2 mb-3">
         <div className="col">
           <input
@@ -142,7 +142,8 @@ const ProductSearch: React.FC = () => {
         <div className="alert alert-warning">No products found</div>
       )}
       {results.length > 0 && (
-        <table className="table table-bordered table-sm">
+        <div className="table-responsive">
+        <table className="table table-striped table-hover table-bordered table-sm align-middle">
           <thead className="table-light">
             <tr>
               <th onClick={() => handleSort('name')}>
@@ -245,6 +246,7 @@ const ProductSearch: React.FC = () => {
             ))}
           </tbody>
         </table>
+         </div>
       )}
     </div>
   );
