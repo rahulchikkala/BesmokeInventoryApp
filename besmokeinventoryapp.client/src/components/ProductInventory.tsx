@@ -115,110 +115,113 @@ const ProductInventory: React.FC = () => {
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
   return (
-    <div
-      style={{
-        backgroundColor: '#f7f7f7',
-        minHeight: '100vh',
-        padding: '2rem',
-        fontFamily: 'Arial, sans-serif',
-      }}
-    >
+    <>
       <AddProduct onAdd={fetchData} />
-      <h2 style={{ textAlign: 'center' }}>Product Inventory</h2>
-      <table
-        style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fff' }}
-      >
-        <thead>
-          <tr style={{ backgroundColor: '#ddd' }}>
-            <th style={thStyle}>ID</th>
-            <th
-              style={{ ...thStyle, cursor: 'pointer' }}
-              onClick={() => handleSort('name')}
-            >
-              Name {sortConfig?.key === 'name' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
-            </th>
-            <th
-              style={{ ...thStyle, cursor: 'pointer' }}
-              onClick={() => handleSort('type')}
-            >
-              Type {sortConfig?.key === 'type' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
-            </th>
-            <th
-              style={{ ...thStyle, cursor: 'pointer' }}
-              onClick={() => handleSort('size')}
-            >
-              Size {sortConfig?.key === 'size' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
-            </th>
-            <th
-              style={{ ...thStyle, cursor: 'pointer' }}
-              onClick={() => handleSort('material')}
-            >
-              Material {sortConfig?.key === 'material' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
-            </th>
-            <th
-              style={{ ...thStyle, cursor: 'pointer' }}
-              onClick={() => handleSort('available')}
-            >
-              Available {sortConfig?.key === 'available' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
-            </th>
-            <th style={thStyle}>Adjust</th>
-            <th style={thStyle}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((product) => (
-            <tr
-              key={product.id}
-              style={{
-                backgroundColor: product.available < 50 ? '#ffe0e0' : 'white',
-                color: product.available < 50 ? '#b00000' : 'black',
-                borderBottom: '1px solid #ccc',
-              }}
-            >
-              <td style={tdStyle}>{product.id}</td>
-              <td style={tdStyle}>{product.name}</td>
-              <td style={tdStyle}>{product.type}</td>
-              <td style={tdStyle}>{product.size}</td>
-              <td style={tdStyle}>{product.material}</td>
-              <td style={tdStyle}>{product.available}</td>
-              <td style={tdStyle}>
-                <button style={btnStyle} onClick={() => adjust(product.id, 1)}>
-                  ＋
-                </button>
-                <button style={btnStyle} onClick={() => adjust(product.id, -1)}>
-                  －
-                </button>
-              </td>
-              <td style={tdStyle}>
-                <button style={btnStyle} onClick={() => openEdit(product)}>
-                  Edit
-                </button>
-                <button style={btnStyle} onClick={() => setDeleteId(product.id)}>
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-        <button
-          style={btnStyle}
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-          disabled={page === 1}
-        >
-          Previous
-        </button>
-        <span style={{ margin: '0 1rem' }}>
-          Page {page} of {totalPages}
-        </span>
-        <button
-          style={btnStyle}
-          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-          disabled={page === totalPages}
-        >
-          Next
-        </button>
+       <div className="card shadow-sm p-4">
+        <h4 className="section-title text-primary text-center">Product Inventory</h4>
+        <div className="table-responsive">
+          <table className="table table-striped table-hover table-bordered table-sm align-middle">
+            <thead className="table-light">
+              <tr>
+                <th>ID</th>
+                <th
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => handleSort('name')}
+                >
+                  Name {sortConfig?.key === 'name' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                </th>
+                <th
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => handleSort('type')}
+                >
+                  Type {sortConfig?.key === 'type' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                </th>
+                <th
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => handleSort('size')}
+                >
+                  Size {sortConfig?.key === 'size' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                </th>
+                <th
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => handleSort('material')}
+                >
+                  Material {sortConfig?.key === 'material' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                </th>
+                <th
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => handleSort('available')}
+                >
+                  Available {sortConfig?.key === 'available' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                </th>
+                <th>Adjust</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((product) => (
+                <tr
+                  key={product.id}
+                  className={product.available < 50 ? 'table-danger' : ''}
+                >
+                  <td>{product.id}</td>
+                  <td>{product.name}</td>
+                  <td>{product.type}</td>
+                  <td>{product.size}</td>
+                  <td>{product.material}</td>
+                  <td>{product.available}</td>
+                  <td>
+                    <button
+                      className="btn btn-sm btn-outline-primary me-1"
+                      onClick={() => adjust(product.id, 1)}
+                    >
+                      ＋
+                    </button>
+                    <button
+                      className="btn btn-sm btn-outline-secondary"
+                      onClick={() => adjust(product.id, -1)}
+                    >
+                      －
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      className="btn btn-sm btn-primary me-1"
+                      onClick={() => openEdit(product)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-sm btn-danger"
+                      onClick={() => setDeleteId(product.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="text-center mt-3">
+          <button
+            className="btn btn-primary me-2"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            Previous
+          </button>
+          <span>
+            Page {page} of {totalPages}
+          </span>
+          <button
+            className="btn btn-primary ms-2"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+          >
+            Next
+          </button>
+        </div>
       </div>
 
       {editingProduct && (
@@ -280,10 +283,13 @@ const ProductInventory: React.FC = () => {
               />
             </label>
             <div style={{ textAlign: 'right' }}>
-              <button style={btnStyle} onClick={saveEdit}>
+              <button className="btn btn-primary me-2" onClick={saveEdit}>
                 Save
               </button>
-              <button style={btnStyle} onClick={() => setEditingProduct(null)}>
+              <button
+                className="btn btn-secondary"
+                onClick={() => setEditingProduct(null)}
+              >
                 Cancel
               </button>
             </div>
@@ -296,10 +302,13 @@ const ProductInventory: React.FC = () => {
           <div style={modalStyle}>
             <p>Are you sure you want to delete this product?</p>
             <div style={{ textAlign: 'right' }}>
-              <button style={btnStyle} onClick={confirmDelete}>
+              <button className="btn btn-danger me-2" onClick={confirmDelete}>
                 Delete
               </button>
-              <button style={btnStyle} onClick={() => setDeleteId(null)}>
+               <button
+                className="btn btn-secondary"
+                onClick={() => setDeleteId(null)}
+              >
                 Cancel
               </button>
             </div>
@@ -308,30 +317,11 @@ const ProductInventory: React.FC = () => {
       )}
 
       {message && <div style={toastStyle}>{message}</div>}
-    </div>
+      </>
   );
 };
 
-const thStyle: React.CSSProperties = {
-  border: '1px solid #ccc',
-  padding: '10px',
-  textAlign: 'left',
-};
 
-const tdStyle: React.CSSProperties = {
-  border: '1px solid #eee',
-  padding: '10px',
-};
-
-const btnStyle: React.CSSProperties = {
-  margin: '0 5px',
-  padding: '5px 10px',
-  cursor: 'pointer',
-  backgroundColor: '#007bff',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '3px',
-};
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
