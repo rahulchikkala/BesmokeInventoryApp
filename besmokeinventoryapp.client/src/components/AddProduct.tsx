@@ -33,31 +33,38 @@ const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
-      <h3>Add Product</h3>
-      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-        {(['name', 'type', 'size', 'material'] as const).map(field => (
-          <input
-            key={field}
-            name={field}
-            placeholder={field}
-            value={form[field]}
-            onChange={handleChange}
-            required
-            style={{ padding: '0.5rem', flex: '1' }}
-          />
+    <div className="card shadow-sm p-4 mb-4">
+      <h4 className="section-title text-primary">Add Product</h4>
+      <form onSubmit={handleSubmit} className="row g-2 align-items-end">
+        {(['name', 'type', 'size', 'material'] as const).map((field) => (
+          <div className="col-sm" key={field}>
+            <input
+              className="form-control"
+              name={field}
+              placeholder={field}
+              value={form[field]}
+              onChange={handleChange}
+              required
+            />
+          </div>
         ))}
-        <input
-          name="initialQuantity"
-          type="number"
-          placeholder="Initial Stock"
-          value={form.initialQuantity}
-          onChange={handleChange}
-          style={{ padding: '0.5rem', flex: '1' }}
-        />
-        <button type="submit" style={{ padding: '0.5rem 1rem' }}>Add</button>
-      </div>
-    </form>
+        <div className="col-sm">
+          <input
+            className="form-control"
+            name="initialQuantity"
+            type="number"
+            placeholder="Initial Stock"
+            value={form.initialQuantity}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="col-auto">
+          <button type="submit" className="btn btn-primary w-100">
+            Add
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 
