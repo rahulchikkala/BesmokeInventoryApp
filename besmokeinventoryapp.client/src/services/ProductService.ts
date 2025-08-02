@@ -10,6 +10,10 @@ export interface Product {
   material: string;
 }
 
+export interface NewProduct extends Omit<Product, 'id'> {
+  initialQuantity: number;
+}
+
 export interface InventoryStatus {
   productId: number;
   availableQuantity: number;
@@ -51,8 +55,8 @@ export async function getPagedProducts(query: ProductQuery): Promise<{ products:
   return res.data;
 }
 
-export async function addProduct(product: Omit<Product, 'id'>): Promise<Product> {
-    const res = await axios.post(`${API_BASE}/products`, product);
+export async function addProduct(product: NewProduct): Promise<Product> {
+  const res = await axios.post(`${API_BASE}/products`, product);
   return res.data;
 }
 
