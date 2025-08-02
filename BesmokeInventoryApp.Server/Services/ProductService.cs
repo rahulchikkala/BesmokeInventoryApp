@@ -42,10 +42,11 @@ public class ProductService : IProductService
 
         await _repo.AddAsync(product);
 
+        var initialQty = productDto.InitialQuantity;
         var status = new InventoryStatus
         {
             ProductId = product.Id,
-            AvailableQuantity = 0
+            AvailableQuantity = initialQty
         };
         await _context.InventoryStatuses.AddAsync(status);
         await _inventoryRepo.AddOperationAsync(new InventoryOperation
@@ -55,9 +56,9 @@ public class ProductService : IProductService
             ProductType = product.Type ?? string.Empty,
             Size = product.Size ?? string.Empty,
             Material = product.Material ?? string.Empty,
-            QuantityChange = 0,
+            QuantityChange = initialQty,
             Timestamp = DateTime.UtcNow,
-            AvailableQuantity = 0,
+            AvailableQuantity = initialQty,
             OperationType = "ProductAdded"
         });
 

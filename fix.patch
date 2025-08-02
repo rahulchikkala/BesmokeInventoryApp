@@ -1,39 +1,75 @@
-﻿diff --git a/BesmokeInventoryApp.Server/Mappers/ProductMappers.cs b/BesmokeInventoryApp.Server/Mappers/ProductMappers.cs
-index 8c11addcd0bff4523005010432a28bf33f605e8f..682898729f309e6c3f601f9c6def69f480cccc53 100644
---- a/BesmokeInventoryApp.Server/Mappers/ProductMappers.cs
-+++ b/BesmokeInventoryApp.Server/Mappers/ProductMappers.cs
-@@ -1,32 +1,33 @@
- ﻿using BesmokeInventoryApp.Server.Dtos;
- using BesmokeInventoryApp.Server.Models;
- 
- namespace BesmokeInventoryApp.Server.Mappers
- {
-     public static class ProductMapper
-     {
-         public static ProductDto ToDto(Product product)
-         {
-             return new ProductDto
-             {
-                 Id = product.Id,
-                 Name = product.Name ?? string.Empty,
-                 Type = product.Type ?? string.Empty,
-                 Size = product.Size ?? string.Empty,
--                Material = product.Material ?? string.Empty
-+                Material = product.Material ?? string.Empty,
-+                InitialQuantity = 0
-             };
-         }
- 
-         public static Product ToEntity(ProductDto dto)
-         {
-             return new Product
-             {
-                 Id = dto.Id,
-                 Name = dto.Name,
-                 Type = dto.Type,
-                 Size = dto.Size,
-                 Material = dto.Material
-             };
-         }
+﻿diff --git a/BesmokeInventoryApp.Server/Services/ProductService.cs b/BesmokeInventoryApp.Server/Services/ProductService.cs
+index 11d2a9ddb90d24524708930b2a62c44d960b90ff..e5051bc441b0bf8bd576acbc1935ed9320337b99 100644
+--- a/BesmokeInventoryApp.Server/Services/ProductService.cs
++++ b/BesmokeInventoryApp.Server/Services/ProductService.cs
+@@ -20,66 +20,67 @@ public class ProductService : IProductService
+         var products = await _repo.GetAllAsync();
+         return products.Select(ProductMapper.ToDto).ToList();
      }
- }
+ 
+     public async Task<ProductDto?> GetProduct(int id)
+     {
+         var product = await _repo.GetByIdAsync(id);
+         return product == null ? null : ProductMapper.ToDto(product);
+     }
+ 
+     public async Task<(bool Success, string Message)> CreateProduct(ProductDto productDto)
+     {
+         var product = new Product
+         {
+             Name = productDto.Name,
+             Type = productDto.Type,
+             Size = productDto.Size,
+             Material = productDto.Material
+         };
+ 
+         if (await _repo.ExistsAsync(product))
+             return (false, "Duplicate product");
+ 
+         await _repo.AddAsync(product);
+ 
++        var initialQty = productDto.InitialQuantity;
+         var status = new InventoryStatus
+         {
+             ProductId = product.Id,
+-            AvailableQuantity = 0
++            AvailableQuantity = initialQty
+         };
+         await _context.InventoryStatuses.AddAsync(status);
+         await _inventoryRepo.AddOperationAsync(new InventoryOperation
+         {
+             ProductId = product.Id,
+             ProductName = product.Name ?? string.Empty,
+             ProductType = product.Type ?? string.Empty,
+             Size = product.Size ?? string.Empty,
+             Material = product.Material ?? string.Empty,
+-            QuantityChange = 0,
++            QuantityChange = initialQty,
+             Timestamp = DateTime.UtcNow,
+-            AvailableQuantity = 0,
++            AvailableQuantity = initialQty,
+             OperationType = "ProductAdded"
+         });
+ 
+         await _inventoryRepo.SaveChangesAsync();
+ 
+         return (true, "Created");
+     }
+ 
+     public async Task<List<ProductDto>> SearchProductsAsync(
+         string? name,
+         string? type,
+         string? size,
+         string? material,
+         string? sortBy = null,
+         bool descending = false)
+     {
+         var query = _context.Products.AsQueryable();
+ 
+         if (!string.IsNullOrEmpty(name))
+             query = query.Where(p => p.Name != null &&
+                p.Name.ToLower().Contains(name.ToLower()));
+         if (!string.IsNullOrEmpty(type))
+             query = query.Where(p => p.Type != null &&
+                  p.Type.ToLower().Contains(type.ToLower()));
+         if (!string.IsNullOrEmpty(size))
