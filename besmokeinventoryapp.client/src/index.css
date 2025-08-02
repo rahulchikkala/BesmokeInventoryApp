@@ -19,6 +19,55 @@ table {
 button {
     margin-right: 0.5rem;
 }
+
+/* Icon button that expands to show a label on hover */
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    overflow: hidden;
+    transition: width 0.3s ease, padding 0.3s ease;
+    width: 32px;
+    padding: 4px;
+}
+
+.icon-btn .btn-label {
+    margin-left: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.icon-btn:hover {
+    width: auto;
+    padding: 4px 8px;
+}
+
+.icon-btn:hover .btn-label {
+    opacity: 1;
+}
+
+/* Search icon that expands to an input on hover */
+.search-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.search-container input {
+    width: 0;
+    padding: 0;
+    margin-left: 4px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: width 0.3s ease, padding 0.3s ease;
+    background-color: #fff;
+}
+
+.search-container:hover input,
+.search-container input:focus {
+    width: 150px;
+    padding: 2px 6px;
+}
 @keyframes ring {
     0% {
         transform: rotate(0);
