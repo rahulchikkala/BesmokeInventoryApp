@@ -1,70 +1,403 @@
-﻿diff --git a/besmokeinventoryapp.client/src/components/InventoryHistory.tsx b/besmokeinventoryapp.client/src/components/InventoryHistory.tsx
-index e29f6c8ab07e6fd75f7c93595e17437cca1929f6..f740f84967ce744eaea280428239009115a31104 100644
---- a/besmokeinventoryapp.client/src/components/InventoryHistory.tsx
-+++ b/besmokeinventoryapp.client/src/components/InventoryHistory.tsx
-@@ -63,63 +63,63 @@ const InventoryHistory: React.FC = () => {
-       op.productId.toString().includes(search)
-     );
-   });
-  const totalPages = search
-     ? Math.ceil(filteredOps.length / pageSize) || 1
-     : Math.ceil(totalCount / pageSize) || 1;
-   const sortedOps = [...filteredOps].sort((a, b) => {
-     let cmp = 0;
-     const nameA = (products.find(p => p.id === a.productId)?.name ?? a.productName).toLowerCase();
-     const nameB = (products.find(p => p.id === b.productId)?.name ?? b.productName).toLowerCase();
-     const typeA = (products.find(p => p.id === a.productId)?.type ?? a.productType).toLowerCase();
-     const typeB = (products.find(p => p.id === b.productId)?.type ?? b.productType).toLowerCase();
-     const sizeA = (products.find(p => p.id === a.productId)?.size ?? a.size).toLowerCase();
-     const sizeB = (products.find(p => p.id === b.productId)?.size ?? b.size).toLowerCase();
-     const materialA = (products.find(p => p.id === a.productId)?.material ?? a.material).toLowerCase();
-     const materialB = (products.find(p => p.id === b.productId)?.material ?? b.material).toLowerCase();
-     switch (sortKey) {
-       case 'id':
-         cmp = (a.id ?? 0) - (b.id ?? 0);
-         break;
-       case 'product':
-         cmp = nameA.localeCompare(nameB);
-         break;
-       case 'productId':
-         cmp = a.productId - b.productId;
--        case 'type':
-+        break;
-+      case 'type':
-         cmp = typeA.localeCompare(typeB);
-         break;
-       case 'size':
-         cmp = sizeA.localeCompare(sizeB);
-         break;
-       case 'material':
-         cmp = materialA.localeCompare(materialB);
-         break;
-       case 'available':
-         cmp = a.availableQuantity - b.availableQuantity;
-         break;
--        break;
-       case 'change':
-         cmp = a.quantityChange - b.quantityChange;
-         break;
-       case 'timestamp':
-         cmp = new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
-         break;
+﻿diff --git a/besmokeinventoryapp.client/src/components/ProductInventory.tsx b/besmokeinventoryapp.client/src/components/ProductInventory.tsx
+index 9d1170553a82887bea3eedfc5f60f4cb8e5612bc..6e77e3e8f214e8ed1c2321cda4a4ecc81a9206d7 100644
+--- a/besmokeinventoryapp.client/src/components/ProductInventory.tsx
++++ b/besmokeinventoryapp.client/src/components/ProductInventory.tsx
+@@ -1,241 +1,373 @@
+-﻿import React, { useState, useEffect, useCallback } from 'react';
++import React, { useState, useEffect, useCallback } from 'react';
+ import AddProduct from './AddProduct';
+ import type {
+   InventoryStatus,
+   Product,
+   ProductQuery,
+ } from '../services/ProductService';
+ import {
+   getPagedProducts,
+   getInventory,
+   adjustInventory,
+   updateProduct,
+   deleteProduct,
+ } from '../services/ProductService';
+ 
+ const ProductInventory: React.FC = () => {
+   const [products, setProducts] = useState<Product[]>([]);
+   const [inventory, setInventory] = useState<InventoryStatus[]>([]);
+   const [sortConfig, setSortConfig] = useState<
+     { key: 'name' | 'type' | 'size' | 'material' | 'available'; direction: 'asc' | 'desc' } | null
+   >(null);
+   const [page, setPage] = useState(1);
+   const [pageSize] = useState(10);
+   const [totalCount, setTotalCount] = useState(0);
++  const [editingProduct, setEditingProduct] = useState<(Product & { available: number }) | null>(null);
++  const [deleteId, setDeleteId] = useState<number | null>(null);
++  const [message, setMessage] = useState<string | null>(null);
+ 
+   const fetchData = useCallback(async () => {
+     try {
+       const query: ProductQuery = { page, pageSize };
+       const [{ products, totalCount }, inventory] = await Promise.all([
+         getPagedProducts(query),
+         getInventory(),
+       ]);
+       setProducts(products);
+       setInventory(inventory);
+       setTotalCount(totalCount);
+     } catch (error) {
+       console.error('Failed to load data:', error);
      }
-     return sortAsc ? cmp : -cmp;
-   });
-   const paginatedOps = search
-     ? sortedOps.slice((page - 1) * pageSize, page * pageSize)
-     : sortedOps;
+   }, [page, pageSize]);
  
    useEffect(() => {
-     if (page > totalPages) {
-       setPage(1);
+     fetchData();
+   }, [fetchData]);
+ 
++  useEffect(() => {
++    if (!message) return;
++    const timer = setTimeout(() => setMessage(null), 3000);
++    return () => clearTimeout(timer);
++  }, [message]);
++
+   const getQuantity = (productId: number) => {
+     const item = inventory.find((i) => i.productId === productId);
+     return item?.availableQuantity ?? 0;
+   };
+ 
+   const adjust = async (productId: number, change: number) => {
+     await adjustInventory(productId, change);
+     await fetchData();
+   };
+ 
+   const handleSort = (key: 'name' | 'type' | 'size' | 'material' | 'available') => {
+     setSortConfig((prev) => {
+       if (prev && prev.key === key) {
+         return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
+       }
+       return { key, direction: 'asc' };
+     });
+   };
+ 
+-  const edit = async (product: Product) => {
+-    const name = prompt('Name', product.name);
+-    if (name === null) return;
+-    const type = prompt('Type', product.type);
+-    if (type === null) return;
+-    const size = prompt('Size', product.size);
+-    if (size === null) return;
+-    const material = prompt('Material', product.material);
+-    if (material === null) return;
+-    const availableStr = prompt('Available', getQuantity(product.id).toString());
+-    if (availableStr === null) return;
+-    const available = Number(availableStr);
+-    await updateProduct({ ...product, name, type, size, material });
+-    const diff = available - getQuantity(product.id);
++  const openEdit = (product: Product) => {
++    setEditingProduct({ ...product, available: getQuantity(product.id) });
++  };
++
++  const saveEdit = async () => {
++    if (!editingProduct) return;
++    const { available, ...prod } = editingProduct;
++    await updateProduct(prod);
++    const diff = available - getQuantity(editingProduct.id);
+     if (diff !== 0) {
+-      await adjustInventory(product.id, diff);
++      await adjustInventory(editingProduct.id, diff);
      }
-   }, [totalPages, page]);
-   
-   const handleSort = (key: typeof sortKey) => {
-     if (key === sortKey) {
-       setSortAsc(!sortAsc);
-     } else {
-       setSortKey(key);
-       setSortAsc(true);
+-    alert('Product updated!');
++    setEditingProduct(null);
++    setMessage('Product updated!');
+     await fetchData();
+   };
+ 
+-  const remove = async (id: number) => {
+-    if (confirm('Are you sure you want to delete this product?')) {
+-      await deleteProduct(id);
+-      alert('Product deleted!');
+-      await fetchData();
+-    }
++  const confirmDelete = async () => {
++    if (deleteId === null) return;
++    await deleteProduct(deleteId);
++    setDeleteId(null);
++    setMessage('Product deleted!');
++    await fetchData();
+   };
+ 
+   const rows = products.map((p) => ({ ...p, available: getQuantity(p.id) }));
+ 
+   if (sortConfig) {
+     rows.sort((a, b) => {
+       const aVal = a[sortConfig.key];
+       const bVal = b[sortConfig.key];
+       if (typeof aVal === 'string' && typeof bVal === 'string') {
+         return sortConfig.direction === 'asc'
+           ? aVal.localeCompare(bVal)
+           : bVal.localeCompare(aVal);
+       }
+       return sortConfig.direction === 'asc'
+         ? (aVal as number) - (bVal as number)
+         : (bVal as number) - (aVal as number);
+     });
+   }
+ 
+   const totalPages = Math.ceil(totalCount / pageSize) || 1;
+ 
+   return (
+     <div
+       style={{
+         backgroundColor: '#f7f7f7',
+         minHeight: '100vh',
+         padding: '2rem',
+         fontFamily: 'Arial, sans-serif',
+       }}
+     >
+       <AddProduct onAdd={fetchData} />
+       <h2 style={{ textAlign: 'center' }}>Product Inventory</h2>
+       <table
+         style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fff' }}
+       >
+         <thead>
+           <tr style={{ backgroundColor: '#ddd' }}>
++            <th style={thStyle}>ID</th>
+             <th
+               style={{ ...thStyle, cursor: 'pointer' }}
+               onClick={() => handleSort('name')}
+             >
+               Name {sortConfig?.key === 'name' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+             </th>
+             <th
+               style={{ ...thStyle, cursor: 'pointer' }}
+               onClick={() => handleSort('type')}
+             >
+               Type {sortConfig?.key === 'type' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+             </th>
+             <th
+               style={{ ...thStyle, cursor: 'pointer' }}
+               onClick={() => handleSort('size')}
+             >
+               Size {sortConfig?.key === 'size' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+             </th>
+             <th
+               style={{ ...thStyle, cursor: 'pointer' }}
+               onClick={() => handleSort('material')}
+             >
+               Material {sortConfig?.key === 'material' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+             </th>
+             <th
+               style={{ ...thStyle, cursor: 'pointer' }}
+               onClick={() => handleSort('available')}
+             >
+               Available {sortConfig?.key === 'available' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+             </th>
+             <th style={thStyle}>Adjust</th>
+             <th style={thStyle}>Actions</th>
+           </tr>
+         </thead>
+         <tbody>
+           {rows.map((product) => (
+             <tr
+               key={product.id}
+               style={{
+                 backgroundColor: product.available < 50 ? '#ffe0e0' : 'white',
+                 color: product.available < 50 ? '#b00000' : 'black',
+                 borderBottom: '1px solid #ccc',
+               }}
+             >
++              <td style={tdStyle}>{product.id}</td>
+               <td style={tdStyle}>{product.name}</td>
+               <td style={tdStyle}>{product.type}</td>
+               <td style={tdStyle}>{product.size}</td>
+               <td style={tdStyle}>{product.material}</td>
+               <td style={tdStyle}>{product.available}</td>
+               <td style={tdStyle}>
+                 <button style={btnStyle} onClick={() => adjust(product.id, 1)}>
+                   ＋
+                 </button>
+                 <button style={btnStyle} onClick={() => adjust(product.id, -1)}>
+                   －
+                 </button>
+               </td>
+               <td style={tdStyle}>
+-                <button style={btnStyle} onClick={() => edit(product)}>
++                <button style={btnStyle} onClick={() => openEdit(product)}>
+                   Edit
+                 </button>
+-                <button style={btnStyle} onClick={() => remove(product.id)}>
++                <button style={btnStyle} onClick={() => setDeleteId(product.id)}>
+                   Delete
+                 </button>
+               </td>
+             </tr>
+           ))}
+         </tbody>
+       </table>
+       <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+         <button
+           style={btnStyle}
+           onClick={() => setPage((p) => Math.max(1, p - 1))}
+           disabled={page === 1}
+         >
+           Previous
+         </button>
+         <span style={{ margin: '0 1rem' }}>
+           Page {page} of {totalPages}
+         </span>
+         <button
+           style={btnStyle}
+           onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+           disabled={page === totalPages}
+         >
+           Next
+         </button>
+       </div>
++
++      {editingProduct && (
++        <div style={overlayStyle}>
++          <div style={modalStyle}>
++            <h3>Edit Product</h3>
++            <label>
++              Name
++              <input
++                style={inputStyle}
++                value={editingProduct.name}
++                onChange={(e) =>
++                  setEditingProduct({ ...editingProduct, name: e.target.value })
++                }
++              />
++            </label>
++            <label>
++              Type
++              <input
++                style={inputStyle}
++                value={editingProduct.type}
++                onChange={(e) =>
++                  setEditingProduct({ ...editingProduct, type: e.target.value })
++                }
++              />
++            </label>
++            <label>
++              Size
++              <input
++                style={inputStyle}
++                value={editingProduct.size}
++                onChange={(e) =>
++                  setEditingProduct({ ...editingProduct, size: e.target.value })
++                }
++              />
++            </label>
++            <label>
++              Material
++              <input
++                style={inputStyle}
++                value={editingProduct.material}
++                onChange={(e) =>
++                  setEditingProduct({ ...editingProduct, material: e.target.value })
++                }
++              />
++            </label>
++            <label>
++              Available
++              <input
++                style={inputStyle}
++                type="number"
++                value={editingProduct.available}
++                onChange={(e) =>
++                  setEditingProduct({
++                    ...editingProduct,
++                    available: Number(e.target.value),
++                  })
++                }
++              />
++            </label>
++            <div style={{ textAlign: 'right' }}>
++              <button style={btnStyle} onClick={saveEdit}>
++                Save
++              </button>
++              <button style={btnStyle} onClick={() => setEditingProduct(null)}>
++                Cancel
++              </button>
++            </div>
++          </div>
++        </div>
++      )}
++
++      {deleteId !== null && (
++        <div style={overlayStyle}>
++          <div style={modalStyle}>
++            <p>Are you sure you want to delete this product?</p>
++            <div style={{ textAlign: 'right' }}>
++              <button style={btnStyle} onClick={confirmDelete}>
++                Delete
++              </button>
++              <button style={btnStyle} onClick={() => setDeleteId(null)}>
++                Cancel
++              </button>
++            </div>
++          </div>
++        </div>
++      )}
++
++      {message && <div style={toastStyle}>{message}</div>}
+     </div>
+   );
+ };
+ 
+ const thStyle: React.CSSProperties = {
+   border: '1px solid #ccc',
+   padding: '10px',
+   textAlign: 'left',
+ };
+ 
+ const tdStyle: React.CSSProperties = {
+   border: '1px solid #eee',
+   padding: '10px',
+ };
+ 
+ const btnStyle: React.CSSProperties = {
+   margin: '0 5px',
+   padding: '5px 10px',
+   cursor: 'pointer',
+   backgroundColor: '#007bff',
+   color: '#fff',
+   border: 'none',
+   borderRadius: '3px',
+ };
+ 
++const inputStyle: React.CSSProperties = {
++  width: '100%',
++  padding: '5px',
++  marginBottom: '0.5rem',
++};
++
++const overlayStyle: React.CSSProperties = {
++  position: 'fixed',
++  top: 0,
++  left: 0,
++  width: '100%',
++  height: '100%',
++  backgroundColor: 'rgba(0,0,0,0.5)',
++  display: 'flex',
++  alignItems: 'center',
++  justifyContent: 'center',
++  zIndex: 1000,
++};
++
++const modalStyle: React.CSSProperties = {
++  backgroundColor: '#fff',
++  padding: '20px',
++  borderRadius: '8px',
++  width: '300px',
++  maxWidth: '90%',
++};
++
++const toastStyle: React.CSSProperties = {
++  position: 'fixed',
++  top: '1rem',
++  right: '1rem',
++  backgroundColor: '#333',
++  color: '#fff',
++  padding: '10px 20px',
++  borderRadius: '4px',
++};
++
+ export default ProductInventory;
