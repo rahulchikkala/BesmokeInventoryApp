@@ -31,13 +31,13 @@ const [products, setProducts] = useState<Product[]>([]);
         <p>No operations found.</p>
       ) : (
        <div className="table-responsive">
-        <table className="table table-striped table-hover table-bordered table-sm align-middle text-center">
+        <table className="table table-striped table-hover table-bordered table-sm align-middle text-center slim-table">
           <thead className="table-light">
             <tr>
              <th className="text-center">ID</th>
-              <th className="text-center">Product</th>
+              <th className="text-center">Product Name</th>
                <th className="text-center">Product ID</th>
-               <th className="text-center">Type</th>
+               <th className="text-center">Product Type</th>
               <th className="text-center">Size</th>
               <th className="text-center">Material</th>
               <th className="text-center">Change</th>
@@ -75,15 +75,55 @@ const [products, setProducts] = useState<Product[]>([]);
             return (
               <tr key={op.id}>
                <td>{op.id}</td>
-                <td>{name}</td>
+                <td>
+                <span
+                  className="d-inline-block text-truncate"
+                  style={{ maxWidth: '150px' }}
+                  title={name}
+                >
+                  {name}
+                </span>
+               </td>
                 <td>{op.productId}</td>
-                <td>{type}</td>
-                <td>{size}</td>
-                <td>{material}</td>
+                <td>
+                  <span
+                    className="d-inline-block text-truncate"
+                    style={{ maxWidth: '120px' }}
+                    title={type}
+                  >
+                    {type}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    className="d-inline-block text-truncate"
+                    style={{ maxWidth: '120px' }}
+                    title={size}
+                  >
+                    {size}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    className="d-inline-block text-truncate"
+                    style={{ maxWidth: '120px' }}
+                    title={material}
+                  >
+                    {material}
+                  </span>
+                </td>
                 <td>{op.quantityChange > 0 ? `+${op.quantityChange}` : op.quantityChange}</td>
                 <td>{op.availableQuantity}</td>
                 <td>{op.operationType}</td>
-                 <td>{op.changeDescription}</td>
+                <td>
+                  <span
+                    className="d-inline-block text-truncate"
+                    style={{ maxWidth: '150px' }}
+                    title={op.changeDescription ?? ''}
+                  >
+                    {op.changeDescription}
+                  </span>
+                </td>
                 <td>{new Date(op.timestamp).toLocaleString()}</td>
               </tr>
             );

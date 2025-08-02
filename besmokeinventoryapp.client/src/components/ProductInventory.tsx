@@ -194,7 +194,7 @@ if (search) {
         {search && rows.length === 0 ? (
             <p className="text-center my-3">No results found.</p>
           ) : (
-          <table className="table table-striped table-hover table-bordered table-sm align-middle text-center">
+          <table className="table table-striped table-hover table-bordered table-sm align-middle text-center slim-table">
             <thead className="table-light">
               <tr>
                 <th>ID</th>
@@ -225,7 +225,15 @@ if (search) {
                   className={product.available < 50 ? 'table-danger' : ''}
                 >
                   <td>{product.id}</td>
-                  <td>{product.name}</td>
+                 <td>
+                    <span
+                      className="d-inline-block text-truncate"
+                      style={{ maxWidth: '150px' }}
+                      title={product.name}
+                    >
+                      {product.name}
+                    </span>
+                  </td>
                   <td>{product.type}</td>
                   <td>{product.size}</td>
                   <td>{product.material}</td>

@@ -122,3 +122,24 @@ body {
         margin-left: 0.25rem;
         font-size: 0.8rem;
     }
+
+.slim-table {
+    width: 100%;
+    table-layout: fixed;
+    font-size: 0.875rem;
+}
+
+    .slim-table th,
+    .slim-table td {
+        padding: 0.35rem;
+    }
+
+    .slim-table th {
+        white-space: normal;
+    }
+
+    .slim-table td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
