@@ -40,7 +40,10 @@ const ProductInventory: React.FC = () => {
       console.error('Failed to load data:', error);
     }
   }, [page, pageSize]);
-
+  const handleProductAdded = async () => {
+    await fetchData();
+    setMessage('Product added!');
+  };
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -119,7 +122,7 @@ const ProductInventory: React.FC = () => {
       <div className="card shadow-sm p-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h4 className="section-title text-primary mb-0">Product Inventory</h4>
-        <AddProduct onAdd={fetchData} />
+         <AddProduct onAdd={handleProductAdded} />
       </div>
 
         <div className="table-responsive">
