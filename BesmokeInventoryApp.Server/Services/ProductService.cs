@@ -68,6 +68,7 @@ public class ProductService : IProductService
     }
 
     public async Task<List<ProductDto>> SearchProductsAsync(
+        int? id,
         string? name,
         string? type,
         string? size,
@@ -76,7 +77,8 @@ public class ProductService : IProductService
         bool descending = false)
     {
         var query = _context.Products.AsQueryable();
-
+        if (id.HasValue)
+            query = query.Where(p => p.Id == id.Value);
         if (!string.IsNullOrEmpty(name))
             query = query.Where(p => p.Name != null &&
                p.Name.ToLower().Contains(name.ToLower()));

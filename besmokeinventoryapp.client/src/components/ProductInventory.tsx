@@ -31,8 +31,9 @@ const ProductInventory: React.FC = () => {
   const fetchData = useCallback(async () => {
     try {
 if (search) {
+        const id = parseInt(search, 10);
         const [products, inventory] = await Promise.all([
-          searchProducts(search),
+         searchProducts(!isNaN(id) ? id : undefined, !isNaN(id) ? undefined : search),
           getInventory(),
         ]);
         setProducts(products);
@@ -137,11 +138,11 @@ if (search) {
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h4 className="section-title text-primary mb-0">Product Inventory</h4>
       <div className="d-flex align-items-center gap-2">
-          <div className="search-container">
+          <div className = "search-bar d-flex align-items-center"   >
             <i className="bi bi-search"></i>
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Search by name or ID..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />

@@ -6,6 +6,7 @@ public interface IProductService
     Task<ProductDto?> GetProduct(int id);
     Task<(bool Success, string Message)> CreateProduct(ProductDto productDto);
     Task<List<ProductDto>> SearchProductsAsync(
+        int? id,
         string? name,
         string? type,
         string? size,

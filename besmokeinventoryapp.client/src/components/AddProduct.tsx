@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { addProduct } from '../services/ProductService';
 
-interface AddProductProps {
+interface Props {
   onAdd?: () => void;
 }
 
-// A small button that opens a modal to add a product.
-// This keeps the main inventory list as the primary focus.
-const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
+const AddProduct: React.FC<Props> = ({ onAdd }) => {
   const [form, setForm] = useState({
     name: '',
     type: '',
@@ -28,9 +26,10 @@ const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
       await addProduct(form);
       setForm({ name: '', type: '', size: '', material: '', initialQuantity: 0 });
       await onAdd?.();
-      setOpen(false);
+    
     } catch (error) {
       console.error(error);
+       alert('Error adding product');
     }
   };
 
@@ -48,18 +47,17 @@ const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
           <div style={modalStyle}>
             <h4 className="section-title text-primary">Add Product</h4>
             <form onSubmit={handleSubmit}>
-              {(['name', 'type', 'size', 'material'] as const).map((field) => (
-                <div className="mb-2" key={field}>
-                  <input
-                    className="form-control"
-                    name={field}
-                    placeholder={field}
-                    value={form[field]}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              ))}
+               {(['name', 'type', 'size', 'material'] as Array<keyof typeof form>).map(field => (
+            <input
+              key={field}
+              name={field}
+              placeholder={field}
+              value={form[field]}
+              onChange={handleChange}
+              required
+              style={{ padding: '0.5rem', flex: '1' }}
+            />
+          ))}
               <div className="mb-3">
                 <input
                   className="form-control"

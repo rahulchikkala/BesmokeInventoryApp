@@ -8,6 +8,7 @@ import {
 } from '../services/ProductService';
 import type { Product, InventoryStatus } from '../services/ProductService';
 const ProductSearch: React.FC = () => {
+    const [idTerm, setIdTerm] = useState('');
   const [term, setTerm] = useState('');
   const [typeTerm, setTypeTerm] = useState('');
   const [sizeTerm, setSizeTerm] = useState('');
@@ -31,8 +32,9 @@ const ProductSearch: React.FC = () => {
 
   const loadResults = async (sort: keyof Product = sortKey, asc: boolean = sortAsc) => {
     try {
+        const id = idTerm ? Number(idTerm) : undefined;
       const [data, inv] = await Promise.all([
-        searchProducts(term, typeTerm, sizeTerm, materialTerm, sort, !asc),
+        searchProducts(id, term, typeTerm, sizeTerm, materialTerm, sort, !asc),
         getInventory(),
       ]);
       setResults(data);
@@ -91,6 +93,15 @@ const ProductSearch: React.FC = () => {
     <div className="card shadow-sm p-4">
       <h4 className="section-title text-primary">Search Products</h4>
       <form onSubmit={handleSearch} className="row g-2 mb-3">
+      <div className="col">
+          <input
+            className="form-control"
+            type="number"
+            placeholder="ID"
+            value={idTerm}
+            onChange={(e) => setIdTerm(e.target.value)}
+          />
+        </div>
         <div className="col">
           <input
             className="form-control"

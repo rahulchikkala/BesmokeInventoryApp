@@ -99,6 +99,7 @@ export async function getLowStock(threshold = 50): Promise<InventoryStatus[]> {
 }
 
 export async function searchProducts(
+    id?: number,
  name?: string,
   type?: string,
   size?: string,
@@ -108,7 +109,7 @@ export async function searchProducts(
 ): Promise<Product[]> {
  try {
     const res = await axios.get(`${API_BASE}/products/search`, {
-      params: { name, type, size, material, sortBy, descending }
+      params: { id, name, type, size, material, sortBy, descending }
     });
     return res.data;
   } catch (err: unknown) {
