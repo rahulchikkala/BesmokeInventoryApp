@@ -136,6 +136,10 @@ const InventoryHistory: React.FC = () => {
       setSortAsc(true);
     }
   };
+  const getSortIcon = (key: typeof sortKey) => {
+    if (sortKey !== key) return 'bi-chevron-expand';
+    return sortAsc ? 'bi-chevron-up' : 'bi-chevron-down';
+  };
   const exportCsv = async () => {
     try {
       const range = getRange();
@@ -220,34 +224,34 @@ const InventoryHistory: React.FC = () => {
         <table className="table table-striped table-hover table-bordered table-sm align-middle">
           <thead className="table-light">
             <tr>
-<th onClick={() => handleSort('id')}>
-              ID {sortKey === 'id' ? (sortAsc ? '▲' : '▼') : ''}
+<th className="sortable" onClick={() => handleSort('id')}>
+              ID <i className={`bi ${getSortIcon('id')}`}></i>
             </th>
-            <th onClick={() => handleSort('product')}>
-              Product {sortKey === 'product' ? (sortAsc ? '▲' : '▼') : ''}
+            <th className="sortable" onClick={() => handleSort('product')}>
+              Product <i className={`bi ${getSortIcon('product')}`}></i>
             </th>
-            <th onClick={() => handleSort('productId')}>
-              Product ID {sortKey === 'productId' ? (sortAsc ? '▲' : '▼') : ''}
+            <th className="sortable" onClick={() => handleSort('productId')}>
+              Product ID <i className={`bi ${getSortIcon('productId')}`}></i>
             </th>
-           <th onClick={() => handleSort('type')}>
-              Type {sortKey === 'type' ? (sortAsc ? '▲' : '▼') : ''}
+            <th className="sortable" onClick={() => handleSort('type')}>
+              Type <i className={`bi ${getSortIcon('type')}`}></i>
             </th>
-            <th onClick={() => handleSort('size')}>
-              Size {sortKey === 'size' ? (sortAsc ? '▲' : '▼') : ''}
+            <th className="sortable" onClick={() => handleSort('size')}>
+              Size <i className={`bi ${getSortIcon('size')}`}></i>
             </th>
-            <th onClick={() => handleSort('material')}>
-              Material {sortKey === 'material' ? (sortAsc ? '▲' : '▼') : ''}
+            <th className="sortable" onClick={() => handleSort('material')}>
+              Material <i className={`bi ${getSortIcon('material')}`}></i>
             </th>
-            <th onClick={() => handleSort('change')}>
-              Change {sortKey === 'change' ? (sortAsc ? '▲' : '▼') : ''}
+            <th className="sortable" onClick={() => handleSort('change')}>
+              Change <i className={`bi ${getSortIcon('change')}`}></i>
             </th>
-        <th onClick={() => handleSort('available')}>
-              Available {sortKey === 'available' ? (sortAsc ? '▲' : '▼') : ''}
+            <th className="sortable" onClick={() => handleSort('available')}>
+              Available <i className={`bi ${getSortIcon('available')}`}></i>
             </th>
             <th>Action</th>
-              <th>Details</th>
-            <th onClick={() => handleSort('timestamp')}>
-              Timestamp {sortKey === 'timestamp' ? (sortAsc ? '▲' : '▼') : ''}
+            <th>Details</th>
+            <th className="sortable" onClick={() => handleSort('timestamp')}>
+              Timestamp <i className={`bi ${getSortIcon('timestamp')}`}></i>
             </th>
             </tr>
           </thead>

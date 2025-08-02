@@ -94,7 +94,14 @@ if (search) {
       return { key, direction: 'asc' };
     });
   };
-
+  const getSortIcon = (
+    key: 'name' | 'type' | 'size' | 'material' | 'available',
+  ) => {
+    if (!sortConfig || sortConfig.key !== key) return 'bi-chevron-expand';
+    return sortConfig.direction === 'asc'
+      ? 'bi-chevron-up'
+      : 'bi-chevron-down';
+  };
   const openEdit = (product: Product) => {
     setEditingProduct({ ...product, available: getQuantity(product.id) });
   };
@@ -174,35 +181,20 @@ if (search) {
             <thead className="table-light">
               <tr>
                 <th>ID</th>
-                <th
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => handleSort('name')}
-                >
-                  Name {sortConfig?.key === 'name' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+              <th className="sortable" onClick={() => handleSort('name')}>
+                  Name <i className={`bi ${getSortIcon('name')}`}></i>
                 </th>
-                <th
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => handleSort('type')}
-                >
-                  Type {sortConfig?.key === 'type' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                <th className="sortable" onClick={() => handleSort('type')}>
+                  Type <i className={`bi ${getSortIcon('type')}`}></i>
                 </th>
-                <th
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => handleSort('size')}
-                >
-                  Size {sortConfig?.key === 'size' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                <th className="sortable" onClick={() => handleSort('size')}>
+                  Size <i className={`bi ${getSortIcon('size')}`}></i>
                 </th>
-                <th
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => handleSort('material')}
-                >
-                  Material {sortConfig?.key === 'material' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                <th className="sortable" onClick={() => handleSort('material')}>
+                  Material <i className={`bi ${getSortIcon('material')}`}></i>
                 </th>
-                <th
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => handleSort('available')}
-                >
-                  Available {sortConfig?.key === 'available' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                <th className="sortable" onClick={() => handleSort('available')}>
+                  Available <i className={`bi ${getSortIcon('available')}`}></i>
                 </th>
                 <th>Adjust</th>
                 <th>Actions</th>
@@ -222,13 +214,13 @@ if (search) {
                   <td>{product.available}</td>
                   <td>
                     <button
-                      className="btn btn-sm btn-outline-success me-1"
+                className="btn btn-sm btn-outline-success me-1 icon-btn"
                       onClick={() => adjust(product.id, 1)}
                     >
                       <i className="bi bi-plus"></i>
                     </button>
                     <button
-                      className="btn btn-sm btn-outline-danger"
+                     className="btn btn-sm btn-outline-danger icon-btn"
                       onClick={() => adjust(product.id, -1)}
                     >
                       <i className="bi bi-dash"></i>
@@ -236,18 +228,19 @@ if (search) {
                   </td>
                   <td>
                     <button
-                      className="btn btn-sm btn-outline-primary me-1 d-flex align-items-center rounded-pill"
+                     className="btn btn-sm btn-outline-primary me-1 icon-btn"
                       onClick={() => openEdit(product)}
+                       title="Edit"
                     >
-                      <i className="bi bi-pencil-square me-1"></i>
-                      Edit
+                    <i className="bi bi-pencil-square"></i>
+        
                     </button>
                     <button
-                     className="btn btn-sm btn-outline-danger d-flex align-items-center rounded-pill"
+                    className="btn btn-sm btn-outline-danger icon-btn"
                       onClick={() => setDeleteId(product.id)}
+                       title="Delete"
                     >
-                      <i className="bi bi-trash me-1"></i>
-                      Delete
+                      <i className="bi bi-trash"></i>
                     </button>
                   </td>
                 </tr>

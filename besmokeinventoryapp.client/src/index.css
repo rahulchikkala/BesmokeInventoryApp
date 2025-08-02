@@ -107,3 +107,18 @@ body {
         opacity: 1;
     }
 }
+
+.icon-btn {
+    padding: 0.25rem;
+    line-height: 1;
+}
+
+.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+    .sortable i {
+        margin-left: 0.25rem;
+        font-size: 0.8rem;
+    }
