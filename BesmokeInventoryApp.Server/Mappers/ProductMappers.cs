@@ -13,7 +13,8 @@ namespace BesmokeInventoryApp.Server.Mappers
                 Name = product.Name ?? string.Empty,
                 Type = product.Type ?? string.Empty,
                 Size = product.Size ?? string.Empty,
-                Material = product.Material ?? string.Empty
+                Material = product.Material ?? string.Empty,
+                InitialQuantity = 0
             };
         }
 

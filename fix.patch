@@ -1,17 +1,39 @@
-﻿diff --git a/BesmokeInventoryApp.Server/Dtos/ProductDto.cs b/BesmokeInventoryApp.Server/Dtos/ProductDto.cs
-index e9b4aa3b4abb09d36abe2ba31b5dc25ff52af24b..4fdcd65dcbab9fb00686720b02c197190bf5a9ec 100644
---- a/BesmokeInventoryApp.Server/Dtos/ProductDto.cs
-+++ b/BesmokeInventoryApp.Server/Dtos/ProductDto.cs
-@@ -1,11 +1,12 @@
- ﻿namespace BesmokeInventoryApp.Server.Dtos
+﻿diff --git a/BesmokeInventoryApp.Server/Mappers/ProductMappers.cs b/BesmokeInventoryApp.Server/Mappers/ProductMappers.cs
+index 8c11addcd0bff4523005010432a28bf33f605e8f..682898729f309e6c3f601f9c6def69f480cccc53 100644
+--- a/BesmokeInventoryApp.Server/Mappers/ProductMappers.cs
++++ b/BesmokeInventoryApp.Server/Mappers/ProductMappers.cs
+@@ -1,32 +1,33 @@
+ ﻿using BesmokeInventoryApp.Server.Dtos;
+ using BesmokeInventoryApp.Server.Models;
+ 
+ namespace BesmokeInventoryApp.Server.Mappers
  {
-     public class ProductDto
+     public static class ProductMapper
      {
-         public int Id { get; set; }
-         public string Name { get; set; } = string.Empty;
-         public string Type { get; set; } = string.Empty;
-         public string Size { get; set; } = string.Empty;
-         public string Material { get; set; } = string.Empty;
-+        public int InitialQuantity { get; set; } = 0;
+         public static ProductDto ToDto(Product product)
+         {
+             return new ProductDto
+             {
+                 Id = product.Id,
+                 Name = product.Name ?? string.Empty,
+                 Type = product.Type ?? string.Empty,
+                 Size = product.Size ?? string.Empty,
+-                Material = product.Material ?? string.Empty
++                Material = product.Material ?? string.Empty,
++                InitialQuantity = 0
+             };
+         }
+ 
+         public static Product ToEntity(ProductDto dto)
+         {
+             return new Product
+             {
+                 Id = dto.Id,
+                 Name = dto.Name,
+                 Type = dto.Type,
+                 Size = dto.Size,
+                 Material = dto.Material
+             };
+         }
      }
  }
