@@ -5,6 +5,8 @@ interface AddProductProps {
   onAdd?: () => void;
 }
 
+// A small button that opens a modal to add a product.
+// This keeps the main inventory list as the primary focus.
 const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
   const [form, setForm] = useState({
     name: '',
@@ -13,6 +15,7 @@ const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
     material: '',
     initialQuantity: 0,
   });
+  const [open, setOpen] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -26,6 +29,7 @@ const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
       alert('Product added!');
       setForm({ name: '', type: '', size: '', material: '', initialQuantity: 0 });
       onAdd?.();
+      setOpen(false);
     } catch (error) {
       console.error(error);
       alert('Error adding product');
@@ -33,39 +37,76 @@ const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
   };
 
   return (
-    <div className="card shadow-sm p-4 mb-4">
-      <h4 className="section-title text-primary">Add Product</h4>
-      <form onSubmit={handleSubmit} className="row g-2 align-items-end">
-        {(['name', 'type', 'size', 'material'] as const).map((field) => (
-          <div className="col-sm" key={field}>
-            <input
-              className="form-control"
-              name={field}
-              placeholder={field}
-              value={form[field]}
-              onChange={handleChange}
-              required
-            />
+    <>
+      <button className="btn btn-success" onClick={() => setOpen(true)}>
+        Add Product
+      </button>
+      {open && (
+        <div style={overlayStyle}>
+          <div style={modalStyle}>
+            <h4 className="section-title text-primary">Add Product</h4>
+            <form onSubmit={handleSubmit}>
+              {(['name', 'type', 'size', 'material'] as const).map((field) => (
+                <div className="mb-2" key={field}>
+                  <input
+                    className="form-control"
+                    name={field}
+                    placeholder={field}
+                    value={form[field]}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              ))}
+              <div className="mb-3">
+                <input
+                  className="form-control"
+                  name="initialQuantity"
+                  type="number"
+                  placeholder="Initial Stock"
+                  value={form.initialQuantity}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="text-end">
+                <button type="submit" className="btn btn-primary me-2">
+                  Add
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setOpen(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
-        ))}
-        <div className="col-sm">
-          <input
-            className="form-control"
-            name="initialQuantity"
-            type="number"
-            placeholder="Initial Stock"
-            value={form.initialQuantity}
-            onChange={handleChange}
-          />
         </div>
-        <div className="col-auto">
-          <button type="submit" className="btn btn-primary w-100">
-            Add
-          </button>
-        </div>
-      </form>
-    </div>
+      )}
+    </>
   );
+};
+
+const overlayStyle: React.CSSProperties = {
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  backgroundColor: 'rgba(0,0,0,0.5)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 1000,
+};
+
+const modalStyle: React.CSSProperties = {
+  backgroundColor: '#fff',
+  padding: '20px',
+  borderRadius: '8px',
+  width: '300px',
+  maxWidth: '90%',
 };
 
 export default AddProduct;
