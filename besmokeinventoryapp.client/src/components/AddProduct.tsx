@@ -44,7 +44,12 @@ const AddProduct: React.FC<Props> = ({ onAdd }) => {
       </button>
       {open && (
         <>
-          <div className="modal fade show d-block" tabIndex={-1} role="dialog">
+          <div
+            className="modal fade show d-block"
+            tabIndex={-1}
+            role="dialog"
+            style={{ zIndex: 1050 }}
+          >
             <div className="modal-dialog modal-dialog-centered" role="document">
               <div className="modal-content">
                 <div className="modal-header">
@@ -88,7 +93,10 @@ const AddProduct: React.FC<Props> = ({ onAdd }) => {
               </div>
             </div>
           </div>
-          <div className="modal-backdrop fade show"></div>
+         <div
+            className="modal-backdrop fade show"
+            style={{ zIndex: 1040 }}
+          ></div>
         </>
       )}
     </>

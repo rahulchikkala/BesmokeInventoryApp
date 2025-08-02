@@ -324,7 +324,7 @@ const overlayStyle: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  zIndex: 1000,
+  zIndex: 1050,
 };
 
 const modalStyle: React.CSSProperties = {
@@ -343,6 +343,7 @@ const toastStyle: React.CSSProperties = {
   color: '#fff',
   padding: '10px 20px',
   borderRadius: '4px',
+  zIndex: 2000,
 };
 
 export default ProductSearch;

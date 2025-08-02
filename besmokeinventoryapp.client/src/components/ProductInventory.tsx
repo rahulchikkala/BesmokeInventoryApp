@@ -330,7 +330,11 @@ if (search) {
 
       {editingProduct && (
         <>
-          <div className="modal fade show d-block" tabIndex={-1}>
+          <div
+            className="modal fade show d-block"
+            tabIndex={-1}
+            style={{ zIndex: 1050 }}
+          >
             <div className="modal-dialog">
               <div className="modal-content">
                 <div className="modal-header">
@@ -343,6 +347,7 @@ if (search) {
                 </div>
                 <div className="modal-body">
                   <div className="mb-3">
+                   <label className="form-label">Name</label>
                     <input
                       className="form-control"
                       value={editingProduct.name}
@@ -352,6 +357,7 @@ if (search) {
                     />
                   </div>
                   <div className="mb-3">
+                  <label className="form-label">Type</label>
                     <input
                       className="form-control"
                       value={editingProduct.type}
@@ -361,6 +367,7 @@ if (search) {
                     />
                   </div>
                   <div className="mb-3">
+                   <label className="form-label">Size</label>
                     <input
                       className="form-control"
                       value={editingProduct.size}
@@ -370,6 +377,7 @@ if (search) {
                     />
                   </div>
                   <div className="mb-3">
+                  <label className="form-label">Material</label>
                     <input
                       className="form-control"
                       value={editingProduct.material}
@@ -379,6 +387,7 @@ if (search) {
                     />
                   </div>
                   <div className="mb-3">
+                  <label className="form-label">Available</label>
                     <input
                       className="form-control"
                       type="number"
@@ -407,13 +416,20 @@ if (search) {
               </div>
             </div>
           </div>
-          <div className="modal-backdrop fade show"></div>
+         <div
+            className="modal-backdrop fade show"
+            style={{ zIndex: 1040 }}
+          ></div>
         </>
       )}
 
       {deleteId !== null && (
         <>
-          <div className="modal fade show d-block" tabIndex={-1}>
+       <div
+            className="modal fade show d-block"
+            tabIndex={-1}
+            style={{ zIndex: 1050 }}
+          >
             <div className="modal-dialog">
               <div className="modal-content">
                 <div className="modal-header">
@@ -442,7 +458,10 @@ if (search) {
               </div>
             </div>
           </div>
-          <div className="modal-backdrop fade show"></div>
+          <div
+            className="modal-backdrop fade show"
+            style={{ zIndex: 1040 }}
+          ></div>
         </>
       )}
 
@@ -461,6 +480,7 @@ const toastStyle: React.CSSProperties = {
   color: '#fff',
   padding: '10px 20px',
   borderRadius: '4px',
+  zIndex: 2000,
 };
 
 export default ProductInventory;

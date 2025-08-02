@@ -368,6 +368,7 @@ const InventoryHistory: React.FC = () => {
   color: '#fff',
   padding: '10px 20px',
   borderRadius: '4px',
+    zIndex: 2000,
 };
 
 export default InventoryHistory;
