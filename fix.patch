@@ -1,147 +1,49 @@
-﻿diff --git a/besmokeinventoryapp.client/src/components/AddProduct.tsx b/besmokeinventoryapp.client/src/components/AddProduct.tsx
-index 0049a8127514969a2f811723fc86a4c90579981b..b5b073484029bbf58e8779a803b6aadb1b04d667 100644
---- a/besmokeinventoryapp.client/src/components/AddProduct.tsx
-+++ b/besmokeinventoryapp.client/src/components/AddProduct.tsx
-@@ -1,71 +1,112 @@
- import React, { useState } from 'react';
- import { addProduct } from '../services/ProductService';
+﻿diff --git a/besmokeinventoryapp.client/src/components/LowStockAlert.tsx b/besmokeinventoryapp.client/src/components/LowStockAlert.tsx
+index 376699104f4c0907e38774f2552fdaa2774934b6..3b931a3b745d92301712c12d50f6b103d8ab6c5c 100644
+--- a/besmokeinventoryapp.client/src/components/LowStockAlert.tsx
++++ b/besmokeinventoryapp.client/src/components/LowStockAlert.tsx
+@@ -1,30 +1,41 @@
+ ﻿import React, { useEffect, useState } from 'react';
+ import { getLowStock } from '../services/ProductService';
+ import type { InventoryStatus } from '../services/ProductService';
  
- interface AddProductProps {
-   onAdd?: () => void;
- }
+ const LowStockAlert: React.FC = () => {
+   const [lowStock, setLowStock] = useState<InventoryStatus[]>([]);
++  const [dismissed, setDismissed] = useState(false);
  
-+// A small button that opens a modal to add a product.
-+// This keeps the main inventory list as the primary focus.
- const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
-   const [form, setForm] = useState({
-     name: '',
-     type: '',
-     size: '',
-     material: '',
-     initialQuantity: 0,
-   });
-+  const [open, setOpen] = useState(false);
+   useEffect(() => {
+     const load = async () => {
+       const data = await getLowStock();
+       setLowStock(data);
+     };
+     load();
+   }, []);
  
-   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-     const { name, value } = e.target;
-     setForm({ ...form, [name]: name === 'initialQuantity' ? Number(value) : value });
-   };
- 
-   const handleSubmit = async (e: React.FormEvent) => {
-     e.preventDefault();
-     try {
-       await addProduct(form);
-       alert('Product added!');
-       setForm({ name: '', type: '', size: '', material: '', initialQuantity: 0 });
-       onAdd?.();
-+      setOpen(false);
-     } catch (error) {
-       console.error(error);
-       alert('Error adding product');
-     }
-   };
+-  if (lowStock.length === 0) return null;
++  if (dismissed || lowStock.length === 0) return null;
  
    return (
--    <div className="card shadow-sm p-4 mb-4">
--      <h4 className="section-title text-primary">Add Product</h4>
--      <form onSubmit={handleSubmit} className="row g-2 align-items-end">
--        {(['name', 'type', 'size', 'material'] as const).map((field) => (
--          <div className="col-sm" key={field}>
--            <input
--              className="form-control"
--              name={field}
--              placeholder={field}
--              value={form[field]}
--              onChange={handleChange}
--              required
--            />
-+    <>
-+      <button className="btn btn-success" onClick={() => setOpen(true)}>
-+        Add Product
-+      </button>
-+      {open && (
-+        <div style={overlayStyle}>
-+          <div style={modalStyle}>
-+            <h4 className="section-title text-primary">Add Product</h4>
-+            <form onSubmit={handleSubmit}>
-+              {(['name', 'type', 'size', 'material'] as const).map((field) => (
-+                <div className="mb-2" key={field}>
-+                  <input
-+                    className="form-control"
-+                    name={field}
-+                    placeholder={field}
-+                    value={form[field]}
-+                    onChange={handleChange}
-+                    required
-+                  />
-+                </div>
-+              ))}
-+              <div className="mb-3">
-+                <input
-+                  className="form-control"
-+                  name="initialQuantity"
-+                  type="number"
-+                  placeholder="Initial Stock"
-+                  value={form.initialQuantity}
-+                  onChange={handleChange}
-+                />
-+              </div>
-+              <div className="text-end">
-+                <button type="submit" className="btn btn-primary me-2">
-+                  Add
-+                </button>
-+                <button
-+                  type="button"
-+                  className="btn btn-secondary"
-+                  onClick={() => setOpen(false)}
-+                >
-+                  Cancel
-+                </button>
-+              </div>
-+            </form>
-           </div>
--        ))}
--        <div className="col-sm">
--          <input
--            className="form-control"
--            name="initialQuantity"
--            type="number"
--            placeholder="Initial Stock"
--            value={form.initialQuantity}
--            onChange={handleChange}
--          />
-         </div>
--        <div className="col-auto">
--          <button type="submit" className="btn btn-primary w-100">
--            Add
--          </button>
--        </div>
--      </form>
--    </div>
-+      )}
-+    </>
+-    <div className="alert alert-warning" role="alert">
++    <div
++      className="alert alert-warning alert-dismissible"
++      role="alert"
++      style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 1050, maxWidth: '300px' }}
++    >
+       <strong>Warning:</strong> Some products are low on stock!
+-      <ul className="mb-0" style={{ maxHeight: '150px', overflowY: 'auto' }}>
++      <button
++        type="button"
++        className="btn-close"
++        aria-label="Close"
++        onClick={() => setDismissed(true)}
++      />
++      <ul className="mb-0 mt-2" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+         {lowStock.map((item, idx) => (
+           <li key={idx}>Product ID {item.productId}: {item.availableQuantity} left</li>
+         ))}
+       </ul>
+     </div>
    );
  };
  
-+const overlayStyle: React.CSSProperties = {
-+  position: 'fixed',
-+  top: 0,
-+  left: 0,
-+  width: '100%',
-+  height: '100%',
-+  backgroundColor: 'rgba(0,0,0,0.5)',
-+  display: 'flex',
-+  alignItems: 'center',
-+  justifyContent: 'center',
-+  zIndex: 1000,
-+};
-+
-+const modalStyle: React.CSSProperties = {
-+  backgroundColor: '#fff',
-+  padding: '20px',
-+  borderRadius: '8px',
-+  width: '300px',
-+  maxWidth: '90%',
-+};
-+
- export default AddProduct;
+ export default LowStockAlert;
