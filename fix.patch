@@ -1,134 +1,63 @@
-﻿diff --git a/besmokeinventoryapp.client/src/components/ProductInventory.tsx b/besmokeinventoryapp.client/src/components/ProductInventory.tsx
-index aff7c15ba4bb2815b77eb911044312de29d849c6..02b79ca1b43422b634d2407816f0a9c5339b481b 100644
---- a/besmokeinventoryapp.client/src/components/ProductInventory.tsx
-+++ b/besmokeinventoryapp.client/src/components/ProductInventory.tsx
-@@ -94,53 +94,56 @@ const ProductInventory: React.FC = () => {
-     setMessage('Product deleted!');
-     await fetchData();
+﻿diff --git a/besmokeinventoryapp.client/src/components/AddProduct.tsx b/besmokeinventoryapp.client/src/components/AddProduct.tsx
+index b5b073484029bbf58e8779a803b6aadb1b04d667..6a119f51f9a71ead7714db9ebb39c18375d64405 100644
+--- a/besmokeinventoryapp.client/src/components/AddProduct.tsx
++++ b/besmokeinventoryapp.client/src/components/AddProduct.tsx
+@@ -4,57 +4,55 @@ import { addProduct } from '../services/ProductService';
+ interface AddProductProps {
+   onAdd?: () => void;
+ }
+ 
+ // A small button that opens a modal to add a product.
+ // This keeps the main inventory list as the primary focus.
+ const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
+   const [form, setForm] = useState({
+     name: '',
+     type: '',
+     size: '',
+     material: '',
+     initialQuantity: 0,
+   });
+   const [open, setOpen] = useState(false);
+ 
+   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+     const { name, value } = e.target;
+     setForm({ ...form, [name]: name === 'initialQuantity' ? Number(value) : value });
    };
  
-   const rows = products.map((p) => ({ ...p, available: getQuantity(p.id) }));
- 
-   if (sortConfig) {
-     rows.sort((a, b) => {
-       const aVal = a[sortConfig.key];
-       const bVal = b[sortConfig.key];
-       if (typeof aVal === 'string' && typeof bVal === 'string') {
-         return sortConfig.direction === 'asc'
-           ? aVal.localeCompare(bVal)
-           : bVal.localeCompare(aVal);
-       }
-       return sortConfig.direction === 'asc'
-         ? (aVal as number) - (bVal as number)
-         : (bVal as number) - (aVal as number);
-     });
-   }
- 
-   const totalPages = Math.ceil(totalCount / pageSize) || 1;
+   const handleSubmit = async (e: React.FormEvent) => {
+     e.preventDefault();
+     try {
+       await addProduct(form);
+-      alert('Product added!');
+       setForm({ name: '', type: '', size: '', material: '', initialQuantity: 0 });
+-      onAdd?.();
++      await onAdd?.();
+       setOpen(false);
+     } catch (error) {
+       console.error(error);
+-      alert('Error adding product');
+     }
+   };
  
    return (
      <>
--      <AddProduct onAdd={fetchData} />
--       <div className="card shadow-sm p-4">
--        <h4 className="section-title text-primary text-center">Product Inventory</h4>
-+    <div className="card shadow-sm p-4">
-+      <div className="d-flex justify-content-between align-items-center mb-3">
-+        <h4 className="section-title text-primary mb-0">Product Inventory</h4>
-+        <AddProduct onAdd={fetchData} />
-+      </div>
-+
-         <div className="table-responsive">
-           <table className="table table-striped table-hover table-bordered table-sm align-middle">
-             <thead className="table-light">
-               <tr>
-                 <th>ID</th>
-                 <th
-                   style={{ cursor: 'pointer' }}
-                   onClick={() => handleSort('name')}
-                 >
-                   Name {sortConfig?.key === 'name' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
-                 </th>
-                 <th
-                   style={{ cursor: 'pointer' }}
-                   onClick={() => handleSort('type')}
-                 >
-                   Type {sortConfig?.key === 'type' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
-                 </th>
-                 <th
-                   style={{ cursor: 'pointer' }}
-                   onClick={() => handleSort('size')}
-                 >
-                   Size {sortConfig?.key === 'size' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
-                 </th>
-                 <th
-                   style={{ cursor: 'pointer' }}
-diff --git a/besmokeinventoryapp.client/src/components/ProductInventory.tsx b/besmokeinventoryapp.client/src/components/ProductInventory.tsx
-index aff7c15ba4bb2815b77eb911044312de29d849c6..02b79ca1b43422b634d2407816f0a9c5339b481b 100644
---- a/besmokeinventoryapp.client/src/components/ProductInventory.tsx
-+++ b/besmokeinventoryapp.client/src/components/ProductInventory.tsx
-@@ -283,63 +286,63 @@ const ProductInventory: React.FC = () => {
-               />
-             </label>
-             <div style={{ textAlign: 'right' }}>
-               <button className="btn btn-primary me-2" onClick={saveEdit}>
-                 Save
-               </button>
-               <button
-                 className="btn btn-secondary"
-                 onClick={() => setEditingProduct(null)}
-               >
-                 Cancel
-               </button>
-             </div>
-           </div>
-         </div>
-       )}
- 
-       {deleteId !== null && (
+       <button className="btn btn-success" onClick={() => setOpen(true)}>
+         Add Product
+       </button>
+       {open && (
          <div style={overlayStyle}>
            <div style={modalStyle}>
-             <p>Are you sure you want to delete this product?</p>
-             <div style={{ textAlign: 'right' }}>
-               <button className="btn btn-danger me-2" onClick={confirmDelete}>
-                 Delete
-               </button>
--               <button
-+              <button
-                 className="btn btn-secondary"
-                 onClick={() => setDeleteId(null)}
-               >
-                 Cancel
-               </button>
-             </div>
-           </div>
-         </div>
-       )}
- 
-       {message && <div style={toastStyle}>{message}</div>}
--      </>
-+    </>
-   );
- };
- 
- 
- 
- const inputStyle: React.CSSProperties = {
-   width: '100%',
-   padding: '5px',
-   marginBottom: '0.5rem',
- };
- 
- const overlayStyle: React.CSSProperties = {
-   position: 'fixed',
-   top: 0,
-   left: 0,
-   width: '100%',
-   height: '100%',
-   backgroundColor: 'rgba(0,0,0,0.5)',
-   display: 'flex',
-   alignItems: 'center',
-   justifyContent: 'center',
-   zIndex: 1000,
- };
- 
- const modalStyle: React.CSSProperties = {
+             <h4 className="section-title text-primary">Add Product</h4>
+             <form onSubmit={handleSubmit}>
+               {(['name', 'type', 'size', 'material'] as const).map((field) => (
+                 <div className="mb-2" key={field}>
+                   <input
+                     className="form-control"
+                     name={field}
+                     placeholder={field}
+                     value={form[field]}
+                     onChange={handleChange}
+                     required
+                   />
+                 </div>
+               ))}

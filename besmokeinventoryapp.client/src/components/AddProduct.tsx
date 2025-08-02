@@ -26,13 +26,11 @@ const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
     e.preventDefault();
     try {
       await addProduct(form);
-      alert('Product added!');
       setForm({ name: '', type: '', size: '', material: '', initialQuantity: 0 });
-      onAdd?.();
+      await onAdd?.();
       setOpen(false);
     } catch (error) {
       console.error(error);
-      alert('Error adding product');
     }
   };
 
