@@ -4,9 +4,6 @@ import type { InventoryStatus } from '../services/ProductService';
 
 const LowStockAlert: React.FC = () => {
   const [lowStock, setLowStock] = useState<InventoryStatus[]>([]);
-  const [dismissed, setDismissed] = useState<boolean>(() =>
-    localStorage.getItem('lowStockDismissed') === 'true'
-  );
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -17,12 +14,7 @@ const LowStockAlert: React.FC = () => {
     load();
   }, []);
 
-  if (dismissed || lowStock.length === 0) return null;
-
-  const dismiss = () => {
-    setDismissed(true);
-    localStorage.setItem('lowStockDismissed', 'true');
-  };
+  if (lowStock.length === 0) return null;
 
   return (
     <div style={containerStyle}>
@@ -37,7 +29,10 @@ const LowStockAlert: React.FC = () => {
       </button>
       {open && (
         <div style={popupStyle}>
-          <strong>Low Stock</strong>
+          <div className="d-flex justify-content-between align-items-center">
+            <strong>Low Stock</strong>
+            <button className="btn-close" onClick={() => setOpen(false)} />
+          </div>
           <ul className="mb-2 mt-2" style={{ maxHeight: '150px', overflowY: 'auto' }}>
             {lowStock.map((item, idx) => (
               <li key={idx}>
@@ -45,12 +40,6 @@ const LowStockAlert: React.FC = () => {
               </li>
             ))}
           </ul>
-          <button
-            className="btn btn-sm btn-outline-secondary w-100"
-            onClick={dismiss}
-          >
-            Dismiss
-          </button>
         </div>
       )}
     </div>

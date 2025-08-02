@@ -1,60 +1,88 @@
-﻿diff --git a/besmokeinventoryapp.client/src/components/AddProduct.tsx b/besmokeinventoryapp.client/src/components/AddProduct.tsx
-index 6a119f51f9a71ead7714db9ebb39c18375d64405..82831e1758885dd5d0eba381aafe3ffa04871358 100644
---- a/besmokeinventoryapp.client/src/components/AddProduct.tsx
-+++ b/besmokeinventoryapp.client/src/components/AddProduct.tsx
-@@ -14,52 +14,53 @@ const AddProduct: React.FC<AddProductProps> = ({ onAdd }) => {
-     size: '',
-     material: '',
-     initialQuantity: 0,
-   });
+﻿diff --git a/besmokeinventoryapp.client/src/components/LowStockAlert.tsx b/besmokeinventoryapp.client/src/components/LowStockAlert.tsx
+index eb5f7fd6208fc609855c26de89114e8100b1acc5..a9e08ef85cd9789e3c0f659a699721b6299a6ea0 100644
+--- a/besmokeinventoryapp.client/src/components/LowStockAlert.tsx
++++ b/besmokeinventoryapp.client/src/components/LowStockAlert.tsx
+@@ -1,78 +1,67 @@
+ import React, { useEffect, useState } from 'react';
+ import { getLowStock } from '../services/ProductService';
+ import type { InventoryStatus } from '../services/ProductService';
+ 
+ const LowStockAlert: React.FC = () => {
+   const [lowStock, setLowStock] = useState<InventoryStatus[]>([]);
+-  const [dismissed, setDismissed] = useState<boolean>(() =>
+-    localStorage.getItem('lowStockDismissed') === 'true'
+-  );
    const [open, setOpen] = useState(false);
  
-   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-     const { name, value } = e.target;
-     setForm({ ...form, [name]: name === 'initialQuantity' ? Number(value) : value });
-   };
+   useEffect(() => {
+     const load = async () => {
+       const data = await getLowStock();
+       setLowStock(data);
+     };
+     load();
+   }, []);
  
-   const handleSubmit = async (e: React.FormEvent) => {
-     e.preventDefault();
-     try {
-       await addProduct(form);
-       setForm({ name: '', type: '', size: '', material: '', initialQuantity: 0 });
-       await onAdd?.();
-       setOpen(false);
-     } catch (error) {
-       console.error(error);
-     }
-   };
+-  if (dismissed || lowStock.length === 0) return null;
+-
+-  const dismiss = () => {
+-    setDismissed(true);
+-    localStorage.setItem('lowStockDismissed', 'true');
+-  };
++  if (lowStock.length === 0) return null;
  
    return (
-     <>
--      <button className="btn btn-success" onClick={() => setOpen(true)}>
--        Add Product
-+      <button className="btn btn-success icon-btn" onClick={() => setOpen(true)}>
-+        <i className="bi bi-plus-circle"></i>
-+        <span className="btn-label">Add</span>
+     <div style={containerStyle}>
+       <button
+         className="btn btn-warning position-relative"
+         onClick={() => setOpen((o) => !o)}
+       >
+         <i className="bi bi-bell bell-ring" />
+         <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+           {lowStock.length}
+         </span>
        </button>
        {open && (
-         <div style={overlayStyle}>
-           <div style={modalStyle}>
-             <h4 className="section-title text-primary">Add Product</h4>
-             <form onSubmit={handleSubmit}>
-               {(['name', 'type', 'size', 'material'] as const).map((field) => (
-                 <div className="mb-2" key={field}>
-                   <input
-                     className="form-control"
-                     name={field}
-                     placeholder={field}
-                     value={form[field]}
-                     onChange={handleChange}
-                     required
-                   />
-                 </div>
-               ))}
-               <div className="mb-3">
-                 <input
-                   className="form-control"
-                   name="initialQuantity"
-                   type="number"
-                   placeholder="Initial Stock"
-                   value={form.initialQuantity}
+         <div style={popupStyle}>
+-          <strong>Low Stock</strong>
++          <div className="d-flex justify-content-between align-items-center">
++            <strong>Low Stock</strong>
++            <button className="btn-close" onClick={() => setOpen(false)} />
++          </div>
+           <ul className="mb-2 mt-2" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+             {lowStock.map((item, idx) => (
+               <li key={idx}>
+                 Product ID {item.productId}: {item.availableQuantity} left
+               </li>
+             ))}
+           </ul>
+-          <button
+-            className="btn btn-sm btn-outline-secondary w-100"
+-            onClick={dismiss}
+-          >
+-            Dismiss
+-          </button>
+         </div>
+       )}
+     </div>
+   );
+ };
+ 
+ const containerStyle: React.CSSProperties = {
+   position: 'fixed',
+   bottom: '1rem',
+   right: '1rem',
+   zIndex: 1050,
+ };
+ 
+ const popupStyle: React.CSSProperties = {
+   position: 'absolute',
+   bottom: '3rem',
+   right: 0,
+   backgroundColor: '#fff',
+   border: '1px solid #ccc',
+   borderRadius: '8px',
+   padding: '1rem',
+   width: '200px',
+   boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+ };
+ 
