@@ -1,91 +1,70 @@
-﻿diff --git a/besmokeinventoryapp.client/src/services/ProductService.ts b/besmokeinventoryapp.client/src/services/ProductService.ts
-index 0081407e801e58745f00aaf22a887aae2e9e4546..599e6ad383c8da41b863d28bb4285178c4353d3d 100644
---- a/besmokeinventoryapp.client/src/services/ProductService.ts
-+++ b/besmokeinventoryapp.client/src/services/ProductService.ts
-@@ -1,80 +1,84 @@
- import axios from 'axios';
- 
- const API_BASE = 'http://localhost:5050/api';
- 
- export interface Product {
-   id: number;
-   name: string;
-   type: string;
-   size: string;
-   material: string;
- }
- 
-+export interface NewProduct extends Omit<Product, 'id'> {
-+  initialQuantity: number;
-+}
-+
- export interface InventoryStatus {
-   productId: number;
-   availableQuantity: number;
- }
- 
- export interface InventoryOperation {
-   id?: number;
-   productId: number;
-   productName: string;
-   productType: string;
-   size: string;
-   material: string;
-   quantityChange: number;
-   availableQuantity: number;
-   operationType: string;
-   changeDescription?: string;
-   timestamp: string;
- }
- export interface PagedQuery {
-   page: number;
-   pageSize: number;
-   startTime?: string;
-   endTime?: string;
- }
- export interface ProductQuery {
-   page: number;
-   pageSize: number;
-   sortBy?: string;
-   descending?: boolean;
- }
- 
- export async function getProducts(): Promise<Product[]> {
-   const res = await axios.get(`${API_BASE}/products`);
-   return res.data;
- }
- 
- export async function getPagedProducts(query: ProductQuery): Promise<{ products: Product[]; totalCount: number }> {
-   const res = await axios.get(`${API_BASE}/products/paged`, { params: query });
-   return res.data;
- }
- 
--export async function addProduct(product: Omit<Product, 'id'>): Promise<Product> {
--    const res = await axios.post(`${API_BASE}/products`, product);
-+export async function addProduct(product: NewProduct): Promise<Product> {
-+  const res = await axios.post(`${API_BASE}/products`, product);
-   return res.data;
- }
- 
- 
- 
- export async function updateProduct(product: Product): Promise<void> {
-   await axios.put(`${API_BASE}/products/${product.id}`, product);
- }
- 
- export async function deleteProduct(id: number): Promise<void> {
-   await axios.delete(`${API_BASE}/products/${id}`);
- }
- 
- export async function getInventory(): Promise<InventoryStatus[]> {
-   const res = await axios.get(`${API_BASE}/inventory/status`);
-   return res.data;
- }
- 
- export async function adjustInventory(productId: number, quantityChange: number): Promise<void> {
-   await axios.post(`${API_BASE}/inventory/adjust`, null, {
-     params: { productId, quantityChange }
+﻿diff --git a/besmokeinventoryapp.client/src/components/InventoryHistory.tsx b/besmokeinventoryapp.client/src/components/InventoryHistory.tsx
+index e29f6c8ab07e6fd75f7c93595e17437cca1929f6..f740f84967ce744eaea280428239009115a31104 100644
+--- a/besmokeinventoryapp.client/src/components/InventoryHistory.tsx
++++ b/besmokeinventoryapp.client/src/components/InventoryHistory.tsx
+@@ -63,63 +63,63 @@ const InventoryHistory: React.FC = () => {
+       op.productId.toString().includes(search)
+     );
    });
- }
+  const totalPages = search
+     ? Math.ceil(filteredOps.length / pageSize) || 1
+     : Math.ceil(totalCount / pageSize) || 1;
+   const sortedOps = [...filteredOps].sort((a, b) => {
+     let cmp = 0;
+     const nameA = (products.find(p => p.id === a.productId)?.name ?? a.productName).toLowerCase();
+     const nameB = (products.find(p => p.id === b.productId)?.name ?? b.productName).toLowerCase();
+     const typeA = (products.find(p => p.id === a.productId)?.type ?? a.productType).toLowerCase();
+     const typeB = (products.find(p => p.id === b.productId)?.type ?? b.productType).toLowerCase();
+     const sizeA = (products.find(p => p.id === a.productId)?.size ?? a.size).toLowerCase();
+     const sizeB = (products.find(p => p.id === b.productId)?.size ?? b.size).toLowerCase();
+     const materialA = (products.find(p => p.id === a.productId)?.material ?? a.material).toLowerCase();
+     const materialB = (products.find(p => p.id === b.productId)?.material ?? b.material).toLowerCase();
+     switch (sortKey) {
+       case 'id':
+         cmp = (a.id ?? 0) - (b.id ?? 0);
+         break;
+       case 'product':
+         cmp = nameA.localeCompare(nameB);
+         break;
+       case 'productId':
+         cmp = a.productId - b.productId;
+-        case 'type':
++        break;
++      case 'type':
+         cmp = typeA.localeCompare(typeB);
+         break;
+       case 'size':
+         cmp = sizeA.localeCompare(sizeB);
+         break;
+       case 'material':
+         cmp = materialA.localeCompare(materialB);
+         break;
+       case 'available':
+         cmp = a.availableQuantity - b.availableQuantity;
+         break;
+-        break;
+       case 'change':
+         cmp = a.quantityChange - b.quantityChange;
+         break;
+       case 'timestamp':
+         cmp = new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+         break;
+     }
+     return sortAsc ? cmp : -cmp;
+   });
+   const paginatedOps = search
+     ? sortedOps.slice((page - 1) * pageSize, page * pageSize)
+     : sortedOps;
  
- export async function getInventoryOperations(startTime?: string, endTime?: string): Promise<InventoryOperation[]> {
+   useEffect(() => {
+     if (page > totalPages) {
+       setPage(1);
+     }
+   }, [totalPages, page]);
+   
+   const handleSort = (key: typeof sortKey) => {
+     if (key === sortKey) {
+       setSortAsc(!sortAsc);
+     } else {
+       setSortKey(key);
+       setSortAsc(true);

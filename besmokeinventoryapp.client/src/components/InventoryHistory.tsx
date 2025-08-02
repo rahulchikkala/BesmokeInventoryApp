@@ -85,7 +85,8 @@ const InventoryHistory: React.FC = () => {
         break;
       case 'productId':
         cmp = a.productId - b.productId;
-        case 'type':
+        break;
+      case 'type':
         cmp = typeA.localeCompare(typeB);
         break;
       case 'size':
@@ -96,7 +97,6 @@ const InventoryHistory: React.FC = () => {
         break;
       case 'available':
         cmp = a.availableQuantity - b.availableQuantity;
-        break;
         break;
       case 'change':
         cmp = a.quantityChange - b.quantityChange;
