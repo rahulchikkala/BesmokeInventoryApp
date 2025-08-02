@@ -183,79 +183,84 @@ if (search) {
   return (
     <>
       <div className="card shadow-sm p-4">
-      <h4 className="section-title text-primary mb-3 text-center">Product Inventory</h4>
-       
-        <div className="d-flex justify-content-between align-items-center gap-2 mb-3 flex-wrap">
-          {!search && (
-            <div className="d-flex align-items-center gap-2 flex-wrap">
-              <button
-                className="btn btn-primary"
-                onClick={() => setPage(1)}
-                disabled={page === 1}
-              >
-                First
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-              >
-                Previous
-              </button>
-              <span>
-                Page {page} of {totalPages}
-              </span>
-              <input
-                type="number"
-                min={1}
-                max={totalPages}
-                value={pageInput}
-                onChange={(e) =>
-                  setPageInput(e.target.value.replace(/\D/g, ''))
-                }
-                className="form-control d-inline-block w-auto"
-              />
-              <button
-                className="btn btn-primary"
-                onClick={() => {
-                  const p = Number(pageInput);
-                  if (!pageInput || isNaN(p) || p < 1 || p > totalPages) {
-                    setMessage('Page not found');
-                  } else {
-                    setPage(p);
-                  }
-                  setPageInput('');
-                }}
-              >
-                Go
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-              >
-                Next
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => setPage(totalPages)}
-                disabled={page === totalPages}
-              >
-                Last
-              </button>
+   <div className="sticky-controls">
+         <div className="sticky-controls">
+          <h4 className="section-title text-primary mb-3 text-center">Product Inventory</h4>
+          <div className="d-flex align-items-center gap-2 mb-3 flex-wrap">
+            {!search && (
+              <div className="d-flex align-items-center gap-2 flex-wrap me-3">
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setPage(1)}
+                  disabled={page === 1}
+                >
+                  First
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Previous
+                </button>
+                <span>
+                  Page {page} of {totalPages}
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  max={totalPages}
+                  value={pageInput}
+                  onChange={(e) =>
+                    setPageInput(e.target.value.replace(/\D/g, ''))
+                    }
+                   className="form-control d-inline-block w-auto"
+                />
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    const p = Number(pageInput);
+                    if (!pageInput || isNaN(p) || p < 1 || p > totalPages) {
+                      setMessage('Page not found');
+                    } else {
+                      setPage(p);
+                    }
+                    setPageInput('');
+                  }}
+                >
+                  Go
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                >
+                  Next
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setPage(totalPages)}
+                  disabled={page === totalPages}
+                >
+                  Last
+                </button>
+              </div>
+            )}
+            <div className="d-flex align-items-center gap-2 flex-grow-1">
+              <div className="search-bar d-flex align-items-center flex-grow-1">
+                <i className="bi bi-search"></i>
+                <input
+                  type="text"
+                  placeholder="Search by name or ID..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <AddProduct onAdd={handleProductAdded} />
+              </div>
+           
             </div>
-          )}
-          <div className="d-flex align-items-center gap-2 ms-auto flex-wrap">
-            <div className="search-bar d-flex align-items-center">
-              <i className="bi bi-search"></i>
-              <input
-                type="text"
-                placeholder="Search by name or ID..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            <AddProduct onAdd={handleProductAdded} />
+            
           </div>
   
         </div>

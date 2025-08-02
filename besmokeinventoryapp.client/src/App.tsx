@@ -51,7 +51,6 @@ function App() {
           </li>
         </ul>
       </div>
-
       {page === 'inventory' && (
         <ProductInventory
           highlightId={highlightId}
