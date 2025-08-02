@@ -52,13 +52,14 @@ export async function getPagedProducts(query: ProductQuery): Promise<{ products:
 }
 
 export async function addProduct(product: Omit<Product, 'id'>): Promise<Product> {
-  const res = await axios.post(`${API_BASE}/products`, product);
+    const res = await axios.post(`${API_BASE}/products`, product);
   return res.data;
 }
 
-export async function updateProduct(product: Product): Promise<Product> {
-  const res = await axios.put(`${API_BASE}/products/${product.id}`, product);
-  return res.data;
+
+
+export async function updateProduct(product: Product): Promise<void> {
+  await axios.put(`${API_BASE}/products/${product.id}`, product);
 }
 
 export async function deleteProduct(id: number): Promise<void> {

@@ -15,31 +15,34 @@ const AddProduct: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await addProduct(form);
-    setForm({ name: '', type: '', size: '', material: '' });
+    try {
+      await addProduct(form);
+      alert('Product added!');
+      setForm({ name: '', type: '', size: '', material: '' });
+    } catch (error) {
+      console.error(error);
+      alert('Error adding product');
+    }
   };
 
   return (
-    <div className="card p-3 mb-4">
-      <h4>Add New Product</h4>
-      <form onSubmit={handleSubmit} className="row g-2">
-        <div className="col-md-3">
-          <input className="form-control" placeholder="Name" name="name" value={form.name} onChange={handleChange} />
-        </div>
-        <div className="col-md-3">
-          <input className="form-control" placeholder="Type" name="type" value={form.type} onChange={handleChange} />
-        </div>
-        <div className="col-md-2">
-          <input className="form-control" placeholder="Size" name="size" value={form.size} onChange={handleChange} />
-        </div>
-        <div className="col-md-2">
-          <input className="form-control" placeholder="Material" name="material" value={form.material} onChange={handleChange} />
-        </div>
-        <div className="col-md-2">
-          <button className="btn btn-primary w-100" type="submit">Add</button>
-        </div>
-      </form>
-    </div>
+    <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
+      <h3>Add Product</h3>
+      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+        {(['name', 'type', 'size', 'material'] as const).map(field => (
+          <input
+            key={field}
+            name={field}
+            placeholder={field}
+            value={form[field]}
+            onChange={handleChange}
+            required
+            style={{ padding: '0.5rem', flex: '1' }}
+          />
+        ))}
+        <button type="submit" style={{ padding: '0.5rem 1rem' }}>Add</button>
+      </div>
+    </form>
   );
 };
 
