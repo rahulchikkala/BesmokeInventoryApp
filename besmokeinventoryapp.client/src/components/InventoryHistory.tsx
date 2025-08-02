@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useState, useCallback } from 'react';
 import { getPagedInventoryOperations, getInventoryOperations, getProducts } from '../services/ProductService';
 import type { InventoryOperation, Product, PagedQuery } from '../services/ProductService';
+import ExpandableCell from './ExpandableCell';
 
 const InventoryHistory: React.FC = () => {
   const [ops, setOps] = useState<InventoryOperation[]>([]);
@@ -190,6 +191,7 @@ const InventoryHistory: React.FC = () => {
  return (
     <>
     <div className="card shadow-sm p-4 mt-4">
+    <div className="bg-white pb-2" style={{ position: 'sticky', top: 0, zIndex: 2 }}>
       <h4 className="section-title text-primary">Inventory History</h4>
     <div className="mb-2 d-flex gap-2">
         <input
@@ -217,12 +219,13 @@ const InventoryHistory: React.FC = () => {
         </select>
         <button className="btn btn-sm btn-primary" onClick={exportCsv}>Export CSV</button>
       </div>
+      </div>
       {filteredOps.length === 0 ? (
         <p>No operations found.</p>
       ) : (
          <div className="table-responsive">
         <table className="table table-striped table-hover table-bordered table-sm align-middle text-center slim-table">
-          <thead className="table-light">
+         <thead className="table-light sticky-top" style={{ top: '4.5rem', zIndex: 1 }}>
             <tr>
 <th className="sortable text-center" onClick={() => handleSort('id')}>
               ID <i className={`bi ${getSortIcon('id')}`}></i>
@@ -281,55 +284,25 @@ const InventoryHistory: React.FC = () => {
               return (
                 <tr key={op.id}>
                 <td>{op.id}</td>
-                   <td>
-                    <span
-                      className="d-inline-block text-truncate"
-                      style={{ maxWidth: '150px' }}
-                      title={name}
-                    >
-                      {name}
-                    </span>
+                <td>
+                    <ExpandableCell text={name} maxWidth={150} />
                   </td>
                  <td>{op.productId}</td>
-                 <td>
-                    <span
-                      className="d-inline-block text-truncate"
-                      style={{ maxWidth: '120px' }}
-                      title={type}
-                    >
-                      {type}
-                    </span>
+                   <td>
+                    <ExpandableCell text={type} maxWidth={120} />
+                  </td>
+            <td>
+                    <ExpandableCell text={size} maxWidth={120} />
                   </td>
                   <td>
-                    <span
-                      className="d-inline-block text-truncate"
-                      style={{ maxWidth: '120px' }}
-                      title={size}
-                    >
-                      {size}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className="d-inline-block text-truncate"
-                      style={{ maxWidth: '120px' }}
-                      title={material}
-                    >
-                      {material}
-                    </span>
+                    <ExpandableCell text={material} maxWidth={120} />
                   </td>
                   <td>{op.quantityChange > 0 ? `+${op.quantityChange}` : op.quantityChange}</td>
                   <td>{op.availableQuantity}</td>
                   <td>{op.operationType}</td>
                
-                  <td>
-                    <span
-                      className="d-inline-block text-truncate"
-                      style={{ maxWidth: '150px' }}
-                      title={op.changeDescription ?? ''}
-                    >
-                      {op.changeDescription}
-                    </span>
+              <td>
+                    <ExpandableCell text={op.changeDescription ?? ''} maxWidth={150} />
                   </td>
                     
                    

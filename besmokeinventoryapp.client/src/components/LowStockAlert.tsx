@@ -49,10 +49,11 @@ const LowStockAlert: React.FC<Props> = ({ onNavigate }) => {
   return (
     <div style={containerStyle}>
       <button
-     className="btn btn-warning btn-sm position-relative p-2"
+      className="btn btn-warning position-relative bell-button"
         onClick={() => setOpen((o) => !o)}
+        aria-label="Low stock notifications"
       >
-        <i className="bi bi-bell-fill bell-ring fs-6" />
+         <i className="bi bi-bell-fill bell-ring" />
         <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
           {lowStock.length}
         </span>
@@ -63,15 +64,18 @@ const LowStockAlert: React.FC<Props> = ({ onNavigate }) => {
             <strong>Low Stock</strong>
             <button className="btn-close" onClick={() => setOpen(false)} />
           </div>
-          <ul className="mb-2 mt-2" style={{ maxHeight: '250px', overflowY: 'auto' }}>
+          <ul
+            className="list-group mb-2 mt-2"
+            style={{ maxHeight: '250px', overflowY: 'auto' }}
+          >
             {lowStock.map((item, idx) => (
-              <li key={idx}>
-               <button
-                  className="btn btn-link p-0 text-start"
-                  onClick={() => goToProduct(item.productId)}
-                >
-                  {item.name}: {item.availableQuantity} left
-                </button>
+              <li
+                key={idx}
+                className="list-group-item list-group-item-action"
+                onClick={() => goToProduct(item.productId)}
+                style={{ cursor: 'pointer' }}
+              >
+                {item.name}: {item.availableQuantity} left
               </li>
             ))}
           </ul>

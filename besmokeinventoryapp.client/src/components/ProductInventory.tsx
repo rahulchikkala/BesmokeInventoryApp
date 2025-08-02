@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AddProduct from './AddProduct';
+import ExpandableCell from './ExpandableCell';
 import type {
   InventoryStatus,
   Product,
@@ -76,15 +77,22 @@ if (search) {
   }, [message]);
   useEffect(() => {
     if (highlightId != null) {
+      setSearch(highlightId.toString());
+      setPage(1);
+    }
+  }, [highlightId]);
+  useEffect(() => {
+    if (highlightId != null) {
       const row = document.getElementById(`product-${highlightId}`);
       if (row) {
         row.scrollIntoView({ behavior: 'smooth', block: 'center' });
         row.classList.add('table-warning');
         setTimeout(() => row.classList.remove('table-warning'), 2000);
+            onHighlightDone?.();
       }
-      onHighlightDone?.();
+  
     }
-  }, [highlightId, onHighlightDone]);
+  }, [highlightId, products, inventory, onHighlightDone]);
   const getQuantity = (productId: number) => {
     const item = inventory.find((i) => i.productId === productId);
     return item?.availableQuantity ?? 0;
@@ -176,17 +184,80 @@ if (search) {
     <>
       <div className="card shadow-sm p-4">
       <h4 className="section-title text-primary mb-3 text-center">Product Inventory</h4>
-        <div className="d-flex justify-content-center align-items-center gap-2 mb-3 flex-wrap">
-          <div className="search-bar d-flex align-items-center">
-            <i className="bi bi-search"></i>
-            <input
-              type="text"
-              placeholder="Search by name or ID..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+       
+        <div className="d-flex justify-content-between align-items-center gap-2 mb-3 flex-wrap">
+          {!search && (
+            <div className="d-flex align-items-center gap-2 flex-wrap">
+              <button
+                className="btn btn-primary"
+                onClick={() => setPage(1)}
+                disabled={page === 1}
+              >
+                First
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                Previous
+              </button>
+              <span>
+                Page {page} of {totalPages}
+              </span>
+              <input
+                type="number"
+                min={1}
+                max={totalPages}
+                value={pageInput}
+                onChange={(e) =>
+                  setPageInput(e.target.value.replace(/\D/g, ''))
+                }
+                className="form-control d-inline-block w-auto"
+              />
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  const p = Number(pageInput);
+                  if (!pageInput || isNaN(p) || p < 1 || p > totalPages) {
+                    setMessage('Page not found');
+                  } else {
+                    setPage(p);
+                  }
+                  setPageInput('');
+                }}
+              >
+                Go
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                Next
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => setPage(totalPages)}
+                disabled={page === totalPages}
+              >
+                Last
+              </button>
+            </div>
+          )}
+          <div className="d-flex align-items-center gap-2 ms-auto flex-wrap">
+            <div className="search-bar d-flex align-items-center">
+              <i className="bi bi-search"></i>
+              <input
+                type="text"
+                placeholder="Search by name or ID..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <AddProduct onAdd={handleProductAdded} />
           </div>
-          <AddProduct onAdd={handleProductAdded} />
+  
         </div>
 
 
@@ -225,14 +296,8 @@ if (search) {
                   className={product.available < 50 ? 'table-danger' : ''}
                 >
                   <td>{product.id}</td>
-                 <td>
-                    <span
-                      className="d-inline-block text-truncate"
-                      style={{ maxWidth: '150px' }}
-                      title={product.name}
-                    >
-                      {product.name}
-                    </span>
+                <td style={{ overflow: 'visible' }}>
+                    <ExpandableCell text={product.name} maxWidth={150} />
                   </td>
                   <td>{product.type}</td>
                   <td>{product.size}</td>
@@ -275,103 +340,45 @@ if (search) {
           </table>
           )}
         </div>
-        {!search && (
-         <div className="text-center mt-3 d-flex justify-content-center align-items-center gap-2 flex-wrap">
-            <button
-              className="btn btn-primary"
-              onClick={() => setPage(1)}
-              disabled={page === 1}
-            >
-              First
-            </button>
-            <button
-             className="btn btn-primary"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-            >
-              Previous
-            </button>
-            <span>
-              Page {page} of {totalPages}
-            </span>
-            <input
-              type="number"
-              min={1}
-              max={totalPages}
-              value={pageInput}
-              onChange={(e) =>
-                setPageInput(e.target.value.replace(/\D/g, ''))
-              }
-              className="form-control d-inline-block w-auto"
-            />
-            <button
-            className="btn btn-primary"
-              onClick={() => {
-                const p = Number(pageInput);
-                if (!pageInput || isNaN(p) || p < 1 || p > totalPages) {
-                  setMessage('Page not found');
-                } else {
-                  setPage(p);
-                }
-                setPageInput('');
-              }}
-            >
-              Go
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-            >
-              Next
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => setPage(totalPages)}
-              disabled={page === totalPages}
-            >
-              Last
-            </button>
+            
           </div>
-        )}
-      </div>
 
-      {editingProduct && (
-        <>
-          <div
-            className="modal fade show d-block"
-            tabIndex={-1}
-            style={{ zIndex: 1050 }}
-          >
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Edit Product</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={() => setEditingProduct(null)}
-                  ></button>
-                </div>
-                <div className="modal-body">
-                  <div className="mb-3">
-                   <label className="form-label">Name</label>
-                    <input
-                      className="form-control"
-                      value={editingProduct.name}
-                      onChange={(e) =>
-                        setEditingProduct({ ...editingProduct, name: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="mb-3">
-                  <label className="form-label">Type</label>
-                    <input
-                      className="form-control"
-                      value={editingProduct.type}
-                      onChange={(e) =>
-                        setEditingProduct({ ...editingProduct, type: e.target.value })
-                      }
+          {editingProduct && (
+            <>
+              <div
+                className="modal fade show d-block"
+                tabIndex={-1}
+                style={{ zIndex: 1050 }}
+              >
+                <div className="modal-dialog">
+                  <div className="modal-content">
+                    <div className="modal-header">
+                      <h5 className="modal-title">Edit Product</h5>
+                      <button
+                        type="button"
+                        className="btn-close"
+                        onClick={() => setEditingProduct(null)}
+                      ></button>
+                    </div>
+                    <div className="modal-body">
+                      <div className="mb-3">
+                       <label className="form-label">Name</label>
+                        <input
+                          className="form-control"
+                          value={editingProduct.name}
+                          onChange={(e) =>
+                            setEditingProduct({ ...editingProduct, name: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="mb-3">
+                      <label className="form-label">Type</label>
+                        <input
+                          className="form-control"
+                          value={editingProduct.type}
+                          onChange={(e) =>
+                            setEditingProduct({ ...editingProduct, type: e.target.value })
+                          }
                     />
                   </div>
                   <div className="mb-3">
