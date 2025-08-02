@@ -40,10 +40,7 @@ public class ProductsController : ControllerBase
         [FromQuery] bool descending = false)
     {
         var products = await _service.SearchProductsAsync(name, type, size, material, sortBy, descending);
-        if (products.Count == 0)
-        {
-            return NotFound();
-        }
+        
         return Ok(products);
     }
     [HttpGet("paged")]

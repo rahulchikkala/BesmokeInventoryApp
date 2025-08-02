@@ -75,16 +75,16 @@ public class ProductService : IProductService
 
         if (!string.IsNullOrEmpty(name))
             query = query.Where(p => p.Name != null &&
-                p.Name.ToLower() == name.ToLower());
+               p.Name.ToLower().Contains(name.ToLower()));
         if (!string.IsNullOrEmpty(type))
             query = query.Where(p => p.Type != null &&
-                 p.Type.ToLower() == type.ToLower());
+                 p.Type.ToLower().Contains(type.ToLower()));
         if (!string.IsNullOrEmpty(size))
             query = query.Where(p => p.Size != null &&
-                p.Size.ToLower() == size.ToLower());
+                 p.Size.ToLower().Contains(size.ToLower()));
         if (!string.IsNullOrEmpty(material))
             query = query.Where(p => p.Material != null &&
-                p.Material.ToLower() == material.ToLower());
+                p.Material.ToLower().Contains(material.ToLower()));
         if (!string.IsNullOrEmpty(sortBy))
         {
             query = sortBy.ToLower() switch
