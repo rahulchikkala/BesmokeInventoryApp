@@ -9,7 +9,10 @@ function App() {
   const [page, setPage] = useState<'inventory' | 'operations' | 'history'>('inventory');
   return (
     <div className="container mt-4">
-      <h1 className="section-title text-center text-primary mb-4">Besmoke Inventory Dashboard</h1>
+      <h1 className="main-heading mb-4 d-flex justify-content-center align-items-center">
+        <i className="bi bi-box-seam me-2"></i>
+        Besmoke Inventory Dashboard
+      </h1>
       <ul className="nav nav-tabs mb-3">
         <li className="nav-item">
           <button

@@ -35,78 +35,63 @@ const AddProduct: React.FC<Props> = ({ onAdd }) => {
 
   return (
     <>
-        <button
-          className="btn btn-success d-inline-flex align-items-center"
-          onClick={() => setOpen(true)}
-        >
-          <i className="bi bi-plus-circle me-1"></i>
-          Add
-        </button>
+  <button
+        className="btn btn-success d-inline-flex align-items-center rounded-pill"
+        onClick={() => setOpen(true)}
+      >
+        <i className="bi bi-plus-circle me-1"></i>
+        Add
+      </button>
       {open && (
-        <div style={overlayStyle}>
-          <div style={modalStyle}>
-            <h4 className="section-title text-primary">Add Product</h4>
-            <form onSubmit={handleSubmit}>
-               {(['name', 'type', 'size', 'material'] as Array<keyof typeof form>).map(field => (
-            <input
-              key={field}
-              name={field}
-              placeholder={field}
-              value={form[field]}
-              onChange={handleChange}
-              required
-              style={{ padding: '0.5rem', flex: '1' }}
-            />
-          ))}
-              <div className="mb-3">
-                <input
-                  className="form-control"
-                  name="initialQuantity"
-                  type="number"
-                  placeholder="Initial Stock"
-                  value={form.initialQuantity}
-                  onChange={handleChange}
-                />
+        <>
+          <div className="modal fade show d-block" tabIndex={-1} role="dialog">
+            <div className="modal-dialog modal-dialog-centered" role="document">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Add Product</h5>
+                  <button type="button" className="btn-close" onClick={() => setOpen(false)}></button>
+                </div>
+                <form onSubmit={handleSubmit}>
+                  <div className="modal-body">
+                    {(['name', 'type', 'size', 'material'] as Array<keyof typeof form>).map((field) => (
+                      <div className="mb-3" key={field}>
+                        <input
+                          className="form-control"
+                          name={field}
+                          placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                          value={form[field]}
+                          onChange={handleChange}
+                          required
+                        />
+                      </div>
+                    ))}
+                    <div className="mb-3">
+                      <input
+                        className="form-control"
+                        name="initialQuantity"
+                        type="number"
+                        placeholder="Initial Stock"
+                        value={form.initialQuantity}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setOpen(false)}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-primary">
+                      Add
+                    </button>
+                  </div>
+                </form>
               </div>
-              <div className="text-end">
-                <button type="submit" className="btn btn-primary me-2">
-                  Add
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setOpen(false)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+            </div>
           </div>
-        </div>
+          <div className="modal-backdrop fade show"></div>
+        </>
       )}
     </>
   );
 };
-
-const overlayStyle: React.CSSProperties = {
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  width: '100%',
-  height: '100%',
-  backgroundColor: 'rgba(0,0,0,0.5)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  zIndex: 1000,
-};
-
-const modalStyle: React.CSSProperties = {
-  backgroundColor: '#fff',
-  padding: '20px',
-  borderRadius: '8px',
-  width: '300px',
-  maxWidth: '90%',
-};
-
 export default AddProduct;

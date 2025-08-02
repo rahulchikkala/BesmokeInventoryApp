@@ -236,14 +236,14 @@ if (search) {
                   </td>
                   <td>
                     <button
-                      className="btn btn-sm btn-primary me-1 d-inline-flex align-items-center"
+                      className="btn btn-sm btn-outline-primary me-1 d-flex align-items-center rounded-pill"
                       onClick={() => openEdit(product)}
                     >
-                      <i className="bi bi-pencil me-1"></i>
+                      <i className="bi bi-pencil-square me-1"></i>
                       Edit
                     </button>
                     <button
-                      className="btn btn-sm btn-danger d-inline-flex align-items-center"
+                     className="btn btn-sm btn-outline-danger d-flex align-items-center rounded-pill"
                       onClick={() => setDeleteId(product.id)}
                     >
                       <i className="bi bi-trash me-1"></i>
@@ -313,95 +313,121 @@ if (search) {
       </div>
 
       {editingProduct && (
-        <div style={overlayStyle}>
-          <div style={modalStyle}>
-            <h3>Edit Product</h3>
-            <label>
-              Name
-              <input
-                style={inputStyle}
-                value={editingProduct.name}
-                onChange={(e) =>
-                  setEditingProduct({ ...editingProduct, name: e.target.value })
-                }
-              />
-            </label>
-            <label>
-              Type
-              <input
-                style={inputStyle}
-                value={editingProduct.type}
-                onChange={(e) =>
-                  setEditingProduct({ ...editingProduct, type: e.target.value })
-                }
-              />
-            </label>
-            <label>
-              Size
-              <input
-                style={inputStyle}
-                value={editingProduct.size}
-                onChange={(e) =>
-                  setEditingProduct({ ...editingProduct, size: e.target.value })
-                }
-              />
-            </label>
-            <label>
-              Material
-              <input
-                style={inputStyle}
-                value={editingProduct.material}
-                onChange={(e) =>
-                  setEditingProduct({ ...editingProduct, material: e.target.value })
-                }
-              />
-            </label>
-            <label>
-              Available
-              <input
-                style={inputStyle}
-                type="number"
-                value={editingProduct.available}
-                onChange={(e) =>
-                  setEditingProduct({
-                    ...editingProduct,
-                    available: Number(e.target.value),
-                  })
-                }
-              />
-            </label>
-            <div style={{ textAlign: 'right' }}>
-              <button className="btn btn-primary me-2" onClick={saveEdit}>
-                Save
-              </button>
-              <button
-                className="btn btn-secondary"
-                onClick={() => setEditingProduct(null)}
-              >
-                Cancel
-              </button>
+        <>
+          <div className="modal fade show d-block" tabIndex={-1}>
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Edit Product</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setEditingProduct(null)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <input
+                      className="form-control"
+                      value={editingProduct.name}
+                      onChange={(e) =>
+                        setEditingProduct({ ...editingProduct, name: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <input
+                      className="form-control"
+                      value={editingProduct.type}
+                      onChange={(e) =>
+                        setEditingProduct({ ...editingProduct, type: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <input
+                      className="form-control"
+                      value={editingProduct.size}
+                      onChange={(e) =>
+                        setEditingProduct({ ...editingProduct, size: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <input
+                      className="form-control"
+                      value={editingProduct.material}
+                      onChange={(e) =>
+                        setEditingProduct({ ...editingProduct, material: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <input
+                      className="form-control"
+                      type="number"
+                      value={editingProduct.available}
+                      onChange={(e) =>
+                        setEditingProduct({
+                          ...editingProduct,
+                          available: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setEditingProduct(null)}
+                  >
+                    Cancel
+                  </button>
+                  <button className="btn btn-primary" onClick={saveEdit}>
+                    Save
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+          <div className="modal-backdrop fade show"></div>
+        </>
       )}
 
       {deleteId !== null && (
-        <div style={overlayStyle}>
-          <div style={modalStyle}>
-            <p>Are you sure you want to delete this product?</p>
-            <div style={{ textAlign: 'right' }}>
-              <button className="btn btn-danger me-2" onClick={confirmDelete}>
-                Delete
-              </button>
-               <button
-                className="btn btn-secondary"
-                onClick={() => setDeleteId(null)}
-              >
-                Cancel
-              </button>
+        <>
+          <div className="modal fade show d-block" tabIndex={-1}>
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Delete Product</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setDeleteId(null)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <p>Are you sure you want to delete this product?</p>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setDeleteId(null)}
+                  >
+                    Cancel
+                  </button>
+                  <button className="btn btn-danger" onClick={confirmDelete}>
+                    Delete
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+          <div className="modal-backdrop fade show"></div>
+        </>
       )}
 
       {message && <div style={toastStyle}>{message}</div>}
@@ -410,33 +436,6 @@ if (search) {
 };
 
 
-
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '5px',
-  marginBottom: '0.5rem',
-};
-
-const overlayStyle: React.CSSProperties = {
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  width: '100%',
-  height: '100%',
-  backgroundColor: 'rgba(0,0,0,0.5)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  zIndex: 1000,
-};
-
-const modalStyle: React.CSSProperties = {
-  backgroundColor: '#fff',
-  padding: '20px',
-  borderRadius: '8px',
-  width: '300px',
-  maxWidth: '90%',
-};
 
 const toastStyle: React.CSSProperties = {
   position: 'fixed',
