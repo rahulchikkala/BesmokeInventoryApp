@@ -66,14 +66,14 @@ const LowStockAlert: React.FC<Props> = ({ onNavigate }) => {
           </div>
           <ul
             className="list-group mb-2 mt-2"
-            style={{ maxHeight: '250px', overflowY: 'auto' }}
+            style={{ maxHeight: '250px', overflowY: 'auto', overflowX: 'hidden' }}
           >
             {lowStock.map((item, idx) => (
               <li
                 key={idx}
                 className="list-group-item list-group-item-action py-1 px-2"
                 onClick={() => goToProduct(item.productId)}
-                style={{ cursor: 'pointer' }}
+             style={{ cursor: 'pointer', wordBreak: 'break-word' }}
               >
                  {`#${item.productId} - ${item.name} (${item.availableQuantity} left)`}
               </li>

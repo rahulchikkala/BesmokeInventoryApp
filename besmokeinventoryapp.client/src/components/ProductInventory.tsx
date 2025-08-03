@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import AddProduct from './AddProduct';
+
 import ExpandableCell from './ExpandableCell';
 import type {
   InventoryStatus,
@@ -13,6 +13,7 @@ import {
   updateProduct,
   deleteProduct,
   searchProducts,
+  addProduct,
 } from '../services/ProductService';
 
 interface Props {
@@ -31,6 +32,16 @@ const ProductInventory: React.FC<Props> = ({ highlightId, onHighlightDone }) => 
   const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState('');
   const [editingProduct, setEditingProduct] = useState<(Product & { available: number }) | null>(null);
+  const [newProduct, setNewProduct] = useState<
+    | {
+        name: string;
+        type: string;
+        size: string;
+        material: string;
+        initialQuantity: number;
+      }
+    | null
+  >(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pageInput, setPageInput] = useState('');
@@ -60,10 +71,7 @@ if (search) {
       setMessage('Error loading data');
     }
   }, [page, pageSize, search]);
-  const handleProductAdded = async () => {
-    await fetchData();
-    setMessage('Product added!');
-  };
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -129,8 +137,7 @@ if (search) {
     setEditingProduct({ ...product, available: getQuantity(product.id) });
   };
 
- const saveEdit = async (e: React.FormEvent) => {
-    e.preventDefault(); 
+const saveEdit = async () => {
     if (!editingProduct) return;
    try {
       const { available, ...prod } = editingProduct;
@@ -145,7 +152,20 @@ if (search) {
     } catch (error) {
       console.error('Failed to update product:', error);
       setMessage('Failed to update product');
-  } 
+}
+  };
+
+  const saveNew = async () => {
+    if (!newProduct) return;
+    try {
+      await addProduct(newProduct);
+      setNewProduct(null);
+      setMessage('Product added!');
+      await fetchData();
+    } catch (error) {
+      console.error('Failed to add product:', error);
+      setMessage('Failed to add product');
+    }
 
   };
 
@@ -198,7 +218,23 @@ if (search) {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <AddProduct onAdd={handleProductAdded} />
+           {!newProduct && (
+              <button
+                className="btn btn-success d-inline-flex align-items-center rounded-pill"
+                onClick={() =>
+                  setNewProduct({
+                    name: '',
+                    type: '',
+                    size: '',
+                    material: '',
+                    initialQuantity: 0,
+                  })
+                }
+              >
+                <i className="bi bi-plus-circle me-1"></i>
+                Add
+              </button>
+            )}
           </div>
         </div>
         <div className="card-body p-0">
@@ -232,58 +268,228 @@ if (search) {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((product) => (
-                    <tr
-                      key={product.id}
-                      id={`product-${product.id}`}
-                      className={product.available < 50 ? 'table-danger' : ''}
-                    >
-                      <td>{product.id}</td>
+                  {newProduct && (
+                    <tr>
                       <td>
-                        <ExpandableCell text={product.name} maxWidth={150} />
+                       <input
+                          className="form-control form-control-sm"
+                          value={newProduct.name}
+                          onChange={(e) =>
+                            setNewProduct({ ...newProduct, name: e.target.value })
+                          }
+                          required
+                        />
                       </td>
                       <td>
-                        <ExpandableCell text={product.type} maxWidth={120} />
+                        <input
+                          className="form-control form-control-sm"
+                          value={newProduct.type}
+                          onChange={(e) =>
+                            setNewProduct({ ...newProduct, type: e.target.value })
+                          }
+                          required
+                        />
                       </td>
                       <td>
-                        <ExpandableCell text={product.size} maxWidth={120} />
+                       <input
+                          className="form-control form-control-sm"
+                          value={newProduct.size}
+                          onChange={(e) =>
+                            setNewProduct({ ...newProduct, size: e.target.value })
+                          }
+                          required
+                        />
                       </td>
                       <td>
-                        <ExpandableCell text={product.material} maxWidth={120} />
+                        <input
+                          className="form-control form-control-sm"
+                          value={newProduct.material}
+                          onChange={(e) =>
+                            setNewProduct({
+                              ...newProduct,
+                              material: e.target.value,
+                            })
+                          }
+                          required
+                        />
                       </td>
-                      <td>{product.available}</td>
+                   
                       <td>
-                        <button
-                          className="btn btn-sm btn-outline-success me-1 icon-btn"
-                          onClick={() => adjust(product.id, 1)}
-                        >
-                          <i className="bi bi-plus"></i>
-                        </button>
-                        <button
-                          className="btn btn-sm btn-outline-danger icon-btn"
-                          onClick={() => adjust(product.id, -1)}
-                        >
-                          <i className="bi bi-dash"></i>
-                        </button>
+                       <input
+                          className="form-control form-control-sm"
+                          type="number"
+                          value={newProduct.initialQuantity}
+                          onChange={(e) =>
+                            setNewProduct({
+                              ...newProduct,
+                              initialQuantity: Number(e.target.value),
+                            })
+                          }
+                        />
                       </td>
                       <td>
-                        <button
-                          className="btn btn-sm btn-outline-primary me-1 icon-btn"
-                          onClick={() => openEdit(product)}
-                          title="Edit"
-                        >
-                          <i className="bi bi-pencil-square"></i>
-                        </button>
-                        <button
-                          className="btn btn-sm btn-outline-danger icon-btn"
-                          onClick={() => setDeleteId(product.id)}
-                          title="Delete"
-                        >
-                          <i className="bi bi-trash"></i>
-                        </button>
+                        <div className="d-flex justify-content-center gap-1">
+                          <button
+                            className="btn btn-sm btn-success"
+                            onClick={saveNew}
+                          >
+                            Add
+                          </button>
+                          <button
+                            className="btn btn-sm btn-secondary"
+                            onClick={() => setNewProduct(null)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       </td>
                     </tr>
-                  ))}
+)}
+                  {rows.map((product) => {
+                    const isEditing = editingProduct?.id === product.id;
+                    return isEditing ? (
+                      <tr
+                        key={product.id}
+                        id={`product-${product.id}`}
+                        className={product.available < 50 ? 'table-danger' : ''}
+                      >
+                        <td>{product.id}</td>
+                        <td>
+                          <input
+                            className="form-control form-control-sm"
+                            value={editingProduct!.name}
+                            onChange={(e) =>
+                              setEditingProduct({
+                                ...editingProduct!,
+                                name: e.target.value,
+                              })
+                            }
+                            required
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="form-control form-control-sm"
+                            value={editingProduct!.type}
+                            onChange={(e) =>
+                              setEditingProduct({
+                                ...editingProduct!,
+                                type: e.target.value,
+                              })
+                            }
+                            required
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="form-control form-control-sm"
+                            value={editingProduct!.size}
+                            onChange={(e) =>
+                              setEditingProduct({
+                                ...editingProduct!,
+                                size: e.target.value,
+                              })
+                            }
+                            required
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="form-control form-control-sm"
+                            value={editingProduct!.material}
+                            onChange={(e) =>
+                              setEditingProduct({
+                                ...editingProduct!,
+                                material: e.target.value,
+                              })
+                            }
+                            required
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="form-control form-control-sm"
+                            type="number"
+                            value={editingProduct!.available}
+                            onChange={(e) =>
+                              setEditingProduct({
+                                ...editingProduct!,
+                                available: Number(e.target.value),
+                              })
+                            }
+                          />
+                        </td>
+                        <td>-</td>
+                        <td>
+                          <div className="d-flex justify-content-center gap-1">
+                            <button
+                              className="btn btn-sm btn-success"
+                              onClick={saveEdit}
+                            >
+                              Save
+                            </button>
+                            <button
+                              className="btn btn-sm btn-secondary"
+                              onClick={() => setEditingProduct(null)}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr
+                        key={product.id}
+                        id={`product-${product.id}`}
+                        className={product.available < 50 ? 'table-danger' : ''}
+                      >
+                        <td>{product.id}</td>
+                        <td>
+                          <ExpandableCell text={product.name} maxWidth={150} />
+                        </td>
+                        <td>
+                          <ExpandableCell text={product.type} maxWidth={120} />
+                        </td>
+                        <td>
+                          <ExpandableCell text={product.size} maxWidth={120} />
+                        </td>
+                        <td>
+                          <ExpandableCell text={product.material} maxWidth={120} />
+                        </td>
+                        <td>{product.available}</td>
+                        <td>
+                          <button
+                            className="btn btn-sm btn-outline-success me-1 icon-btn"
+                            onClick={() => adjust(product.id, 1)}
+                          >
+                            <i className="bi bi-plus"></i>
+                          </button>
+                          <button
+                            className="btn btn-sm btn-outline-danger icon-btn"
+                            onClick={() => adjust(product.id, -1)}
+                          >
+                            <i className="bi bi-dash"></i>
+                          </button>
+                        </td>
+                        <td>
+                          <button
+                            className="btn btn-sm btn-outline-primary me-1 icon-btn"
+                            onClick={() => openEdit(product)}
+                            title="Edit"
+                          >
+                            <i className="bi bi-pencil-square"></i>
+                          </button>
+                          <button
+                            className="btn btn-sm btn-outline-danger icon-btn"
+                            onClick={() => setDeleteId(product.id)}
+                            title="Delete"
+                          >
+                            <i className="bi bi-trash"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -348,70 +554,6 @@ if (search) {
         )}
       </div>
 
-      {editingProduct && (
-        <>
-         <div
-            className="modal fade show d-block"
-            tabIndex={-1}
-            style={{ zIndex: 1050 }}
-          >
-            <div className="modal-dialog modal-dialog-centered">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Edit Product</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={() => setEditingProduct(null)}
-                  ></button>
-                </div>
-               <form onSubmit={saveEdit}>
-                  <div className="modal-body">
-                    {(['name', 'type', 'size', 'material'] as const).map((field) => (
-                      <div className="mb-3" key={field}>
-                        <input
-                          className="form-control"
-                          value={editingProduct[field]}
-                          onChange={(e) =>
-                            setEditingProduct({ ...editingProduct, [field]: e.target.value })
-                          }
-                          required
-                        />
-                      </div>
-                    ))}
-                    <div className="mb-3">
-                      <input
-                        className="form-control"
-                        type="number"
-                        value={editingProduct.available}
-                        onChange={(e) =>
-                          setEditingProduct({
-                            ...editingProduct,
-                            available: Number(e.target.value),
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="modal-footer">
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={() => setEditingProduct(null)}
-                    >
-                      Cancel
-                    </button>
-                    <button type="submit" className="btn btn-primary">
-                      Save
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-          <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
-        </>
-      )}
 
       {deleteId !== null && (
         <>
