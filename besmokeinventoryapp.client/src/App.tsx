@@ -15,16 +15,16 @@ function App() {
   };
   return (
     <div className="container-fluid p-0">
-    <div className="sticky-top bg-white pb-2">
+   <header className="sticky-top bg-light border-bottom py-2">
         <h1
-          className="main-heading mb-4 d-flex justify-content-center align-items-center"
+          className="main-heading mb-1 d-flex justify-content-center align-items-center"
           style={{ cursor: 'pointer' }}
           onClick={() => setPage('inventory')}
         >
           <i className="bi bi-box-seam me-2"></i>
           Besmoke Inventory Dashboard
         </h1>
-        <ul className="nav nav-tabs mb-3">
+     <ul className="nav nav-tabs justify-content-center mb-0">
           <li className="nav-item">
             <button
               className={`nav-link ${page === 'inventory' ? 'active' : ''}`}
@@ -50,7 +50,7 @@ function App() {
             </button>
           </li>
         </ul>
-      </div>
+      </header>
       {page === 'inventory' && (
         <ProductInventory
           highlightId={highlightId}

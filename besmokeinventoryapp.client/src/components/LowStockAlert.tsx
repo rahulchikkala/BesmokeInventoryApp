@@ -71,11 +71,11 @@ const LowStockAlert: React.FC<Props> = ({ onNavigate }) => {
             {lowStock.map((item, idx) => (
               <li
                 key={idx}
-                className="list-group-item list-group-item-action"
+                className="list-group-item list-group-item-action py-1 px-2"
                 onClick={() => goToProduct(item.productId)}
                 style={{ cursor: 'pointer' }}
               >
-                {item.name}: {item.availableQuantity} left
+                 {`#${item.productId} - ${item.name} (${item.availableQuantity} left)`}
               </li>
             ))}
           </ul>
@@ -100,7 +100,7 @@ const popupStyle: React.CSSProperties = {
   border: '1px solid #ccc',
   borderRadius: '8px',
   padding: '1rem',
-  width: '300px',
+  width: '260px',
   boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
 };
 
