@@ -182,212 +182,199 @@ if (search) {
 
   return (
     <>
-      <div className="card shadow-sm p-4">
-   <div className="sticky-controls">
-         <div className="sticky-controls">
-          <h4 className="section-title text-primary mb-3 text-center">Product Inventory</h4>
-          <div className="d-flex align-items-center gap-2 mb-3 flex-wrap">
-            {!search && (
-              <div className="d-flex align-items-center gap-2 flex-wrap me-3">
-                <button
-                  className="btn btn-primary"
-                  onClick={() => setPage(1)}
-                  disabled={page === 1}
-                >
-                  First
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Previous
-                </button>
-                <span>
-                  Page {page} of {totalPages}
-                </span>
-                <input
-                  type="number"
-                  min={1}
-                  max={totalPages}
-                  value={pageInput}
-                  onChange={(e) =>
-                    setPageInput(e.target.value.replace(/\D/g, ''))
-                    }
-                   className="form-control d-inline-block w-auto"
-                />
-                <button
-                  className="btn btn-primary"
-                  onClick={() => {
-                    const p = Number(pageInput);
-                    if (!pageInput || isNaN(p) || p < 1 || p > totalPages) {
-                      setMessage('Page not found');
-                    } else {
-                      setPage(p);
-                    }
-                    setPageInput('');
-                  }}
-                >
-                  Go
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                >
-                  Next
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => setPage(totalPages)}
-                  disabled={page === totalPages}
-                >
-                  Last
-                </button>
-              </div>
-            )}
-            <div className="d-flex align-items-center gap-2 flex-grow-1">
-              <div className="search-bar d-flex align-items-center flex-grow-1">
-                <i className="bi bi-search"></i>
-                <input
-                  type="text"
-                  placeholder="Search by name or ID..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-              <AddProduct onAdd={handleProductAdded} />
-              </div>
-           
+      <div className="card shadow-sm">
+        <div className="card-header bg-white">
+          <div className="d-flex flex-wrap align-items-center gap-2">
+            <h4 className="section-title text-primary mb-0 flex-grow-1 text-center text-md-start">
+              Product Inventory
+            </h4>
+            <div className="search-bar d-flex align-items-center">
+              <i className="bi bi-search"></i>
+              <input
+                type="text"
+                placeholder="Search by name or ID..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
-            
+            <AddProduct onAdd={handleProductAdded} />
           </div>
-  
         </div>
-
-
-        <div className="table-responsive">
-        {search && rows.length === 0 ? (
+        <div className="card-body p-0">
+          {search && rows.length === 0 ? (
             <p className="text-center my-3">No results found.</p>
           ) : (
-          <table className="table table-striped table-hover table-bordered table-sm align-middle text-center slim-table">
-            <thead className="table-light">
-              <tr>
-                <th>ID</th>
-              <th className="sortable" onClick={() => handleSort('name')}>
-                  Name <i className={`bi ${getSortIcon('name')}`}></i>
-                </th>
-                <th className="sortable" onClick={() => handleSort('type')}>
-                  Type <i className={`bi ${getSortIcon('type')}`}></i>
-                </th>
-                <th className="sortable" onClick={() => handleSort('size')}>
-                  Size <i className={`bi ${getSortIcon('size')}`}></i>
-                </th>
-                <th className="sortable" onClick={() => handleSort('material')}>
-                  Material <i className={`bi ${getSortIcon('material')}`}></i>
-                </th>
-                <th className="sortable" onClick={() => handleSort('available')}>
-                  Available <i className={`bi ${getSortIcon('available')}`}></i>
-                </th>
-                <th>Adjust</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((product) => (
-                <tr
-                  key={product.id}
-                  id={`product-${product.id}`}
-                  className={product.available < 50 ? 'table-danger' : ''}
-                >
-                  <td>{product.id}</td>
-                 <td>
-                    <ExpandableCell text={product.name} maxWidth={150} />
-                  </td>
-                  <td>{product.type}</td>
-                  <td>{product.size}</td>
-                  <td>{product.material}</td>
-                  <td>{product.available}</td>
-                  <td>
-                    <button
-                className="btn btn-sm btn-outline-success me-1 icon-btn"
-                      onClick={() => adjust(product.id, 1)}
+            <div className="table-responsive" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+              <table className="table table-striped table-hover table-bordered table-sm align-middle text-center slim-table">
+                <thead className="table-light sticky-top" style={{ top: 0 }}>
+                  <tr>
+                    <th>ID</th>
+                    <th className="sortable" onClick={() => handleSort('name')}>
+                      Name <i className={`bi ${getSortIcon('name')}`}></i>
+                    </th>
+                    <th className="sortable" onClick={() => handleSort('type')}>
+                      Type <i className={`bi ${getSortIcon('type')}`}></i>
+                    </th>
+                    <th className="sortable" onClick={() => handleSort('size')}>
+                      Size <i className={`bi ${getSortIcon('size')}`}></i>
+                    </th>
+                    <th className="sortable" onClick={() => handleSort('material')}>
+                      Material <i className={`bi ${getSortIcon('material')}`}></i>
+                    </th>
+                    <th className="sortable" onClick={() => handleSort('available')}>
+                      Available <i className={`bi ${getSortIcon('available')}`}></i>
+                    </th>
+                    <th>Adjust</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((product) => (
+                    <tr
+                      key={product.id}
+                      id={`product-${product.id}`}
+                      className={product.available < 50 ? 'table-danger' : ''}
                     >
-                      <i className="bi bi-plus"></i>
-                    </button>
-                    <button
-                     className="btn btn-sm btn-outline-danger icon-btn"
-                      onClick={() => adjust(product.id, -1)}
-                    >
-                      <i className="bi bi-dash"></i>
-                    </button>
-                  </td>
-                  <td>
-                    <button
-                     className="btn btn-sm btn-outline-primary me-1 icon-btn"
-                      onClick={() => openEdit(product)}
-                       title="Edit"
-                    >
-                    <i className="bi bi-pencil-square"></i>
-        
-                    </button>
-                    <button
-                    className="btn btn-sm btn-outline-danger icon-btn"
-                      onClick={() => setDeleteId(product.id)}
-                       title="Delete"
-                    >
-                      <i className="bi bi-trash"></i>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      <td>{product.id}</td>
+                      <td>
+                        <ExpandableCell text={product.name} maxWidth={150} />
+                      </td>
+                      <td>{product.type}</td>
+                      <td>{product.size}</td>
+                      <td>{product.material}</td>
+                      <td>{product.available}</td>
+                      <td>
+                        <button
+                          className="btn btn-sm btn-outline-success me-1 icon-btn"
+                          onClick={() => adjust(product.id, 1)}
+                        >
+                          <i className="bi bi-plus"></i>
+                        </button>
+                        <button
+                          className="btn btn-sm btn-outline-danger icon-btn"
+                          onClick={() => adjust(product.id, -1)}
+                        >
+                          <i className="bi bi-dash"></i>
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          className="btn btn-sm btn-outline-primary me-1 icon-btn"
+                          onClick={() => openEdit(product)}
+                          title="Edit"
+                        >
+                          <i className="bi bi-pencil-square"></i>
+                        </button>
+                        <button
+                          className="btn btn-sm btn-outline-danger icon-btn"
+                          onClick={() => setDeleteId(product.id)}
+                          title="Delete"
+                        >
+                          <i className="bi bi-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
-            
+        {!search && (
+          <div className="card-footer d-flex justify-content-center align-items-center gap-2 flex-wrap">
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => setPage(1)}
+              disabled={page === 1}
+            >
+              First
+            </button>
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              Previous
+            </button>
+            <span>
+              Page {page} of {totalPages}
+            </span>
+            <input
+              type="number"
+              min={1}
+              max={totalPages}
+              value={pageInput}
+              onChange={(e) => setPageInput(e.target.value.replace(/\D/g, ''))}
+              className="form-control form-control-sm w-auto"
+            />
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => {
+                const p = Number(pageInput);
+                if (!pageInput || isNaN(p) || p < 1 || p > totalPages) {
+                  setMessage('Page not found');
+                } else {
+                  setPage(p);
+                }
+                setPageInput('');
+              }}
+            >
+              Go
+            </button>
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+            >
+              Next
+            </button>
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => setPage(totalPages)}
+              disabled={page === totalPages}
+            >
+              Last
+            </button>
           </div>
+        )}
+      </div>
 
-          {editingProduct && (
-            <>
-              <div
-                className="modal fade show d-block"
-                tabIndex={-1}
-                style={{ zIndex: 1050 }}
-              >
-                <div className="modal-dialog">
-                  <div className="modal-content">
-                    <div className="modal-header">
-                      <h5 className="modal-title">Edit Product</h5>
-                      <button
-                        type="button"
-                        className="btn-close"
-                        onClick={() => setEditingProduct(null)}
-                      ></button>
-                    </div>
-                    <div className="modal-body">
-                      <div className="mb-3">
-                       <label className="form-label">Name</label>
-                        <input
-                          className="form-control"
-                          value={editingProduct.name}
-                          onChange={(e) =>
-                            setEditingProduct({ ...editingProduct, name: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="mb-3">
-                      <label className="form-label">Type</label>
-                        <input
-                          className="form-control"
-                          value={editingProduct.type}
-                          onChange={(e) =>
-                            setEditingProduct({ ...editingProduct, type: e.target.value })
-                          }
+      {editingProduct && (
+        <>
+          <div className="modal fade show d-block" tabIndex={-1} style={{ zIndex: 1050 }}>
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Edit Product</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setEditingProduct(null)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label className="form-label">Name</label>
+                    <input
+                      className="form-control"
+                      value={editingProduct.name}
+                      onChange={(e) =>
+                        setEditingProduct({ ...editingProduct, name: e.target.value })
+                      }
                     />
                   </div>
                   <div className="mb-3">
-                   <label className="form-label">Size</label>
+                    <label className="form-label">Type</label>
+                    <input
+                      className="form-control"
+                      value={editingProduct.type}
+                      onChange={(e) =>
+                        setEditingProduct({ ...editingProduct, type: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Size</label>
                     <input
                       className="form-control"
                       value={editingProduct.size}
@@ -397,7 +384,7 @@ if (search) {
                     />
                   </div>
                   <div className="mb-3">
-                  <label className="form-label">Material</label>
+                    <label className="form-label">Material</label>
                     <input
                       className="form-control"
                       value={editingProduct.material}
@@ -407,7 +394,7 @@ if (search) {
                     />
                   </div>
                   <div className="mb-3">
-                  <label className="form-label">Available</label>
+                    <label className="form-label">Available</label>
                     <input
                       className="form-control"
                       type="number"
@@ -436,20 +423,13 @@ if (search) {
               </div>
             </div>
           </div>
-         <div
-            className="modal-backdrop fade show"
-            style={{ zIndex: 1040 }}
-          ></div>
+          <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
         </>
       )}
 
       {deleteId !== null && (
         <>
-       <div
-            className="modal fade show d-block"
-            tabIndex={-1}
-            style={{ zIndex: 1050 }}
-          >
+          <div className="modal fade show d-block" tabIndex={-1} style={{ zIndex: 1050 }}>
             <div className="modal-dialog">
               <div className="modal-content">
                 <div className="modal-header">
@@ -478,19 +458,14 @@ if (search) {
               </div>
             </div>
           </div>
-          <div
-            className="modal-backdrop fade show"
-            style={{ zIndex: 1040 }}
-          ></div>
+          <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
         </>
       )}
 
       {message && <div style={toastStyle}>{message}</div>}
-      </>
+    </>
   );
 };
-
-
 
 const toastStyle: React.CSSProperties = {
   position: 'fixed',

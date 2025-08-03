@@ -3,7 +3,6 @@
   useState,
   useCallback,
   useRef,
-  useLayoutEffect,
 } from 'react';
 import { getPagedInventoryOperations, getInventoryOperations, getProducts } from '../services/ProductService';
 import type { InventoryOperation, Product, PagedQuery } from '../services/ProductService';
