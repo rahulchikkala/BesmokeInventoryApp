@@ -156,7 +156,16 @@ const saveEdit = async () => {
   };
 
   const saveNew = async () => {
-    if (!newProduct) return;
+   if (
+      !newProduct ||
+      !newProduct.name.trim() ||
+      !newProduct.type.trim() ||
+      !newProduct.size.trim() ||
+      !newProduct.material.trim()
+    ) {
+      setMessage('All fields are required');
+      return;
+    }
     try {
       await addProduct(newProduct);
       setNewProduct(null);
@@ -183,6 +192,13 @@ const saveEdit = async () => {
   };
 
   const rows = products.map((p) => ({ ...p, available: getQuantity(p.id) }));
+  const isNewProductValid = !!(
+    newProduct &&
+    newProduct.name.trim() &&
+    newProduct.type.trim() &&
+    newProduct.size.trim() &&
+    newProduct.material.trim()
+  );
 
   if (sortConfig) {
     rows.sort((a, b) => {
@@ -270,6 +286,7 @@ const saveEdit = async () => {
                 <tbody>
                   {newProduct && (
                     <tr>
+                     <td>-</td>
                       <td>
                        <input
                           className="form-control form-control-sm"
@@ -327,11 +344,13 @@ const saveEdit = async () => {
                           }
                         />
                       </td>
+                       <td>-</td>
                       <td>
                         <div className="d-flex justify-content-center gap-1">
                           <button
                             className="btn btn-sm btn-success"
                             onClick={saveNew}
+                            disabled={!isNewProductValid}
                           >
                             Add
                           </button>

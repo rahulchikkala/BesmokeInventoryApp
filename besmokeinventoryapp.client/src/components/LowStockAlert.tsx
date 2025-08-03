@@ -87,7 +87,7 @@ const LowStockAlert: React.FC<Props> = ({ onNavigate }) => {
 
 const containerStyle: React.CSSProperties = {
   position: 'fixed',
-  bottom: '1rem',
+  bottom: '4rem',
   right: '1rem',
   zIndex: 1050,
 };

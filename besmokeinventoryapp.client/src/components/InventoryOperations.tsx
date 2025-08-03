@@ -92,11 +92,18 @@ const [products, setProducts] = useState<Product[]>([]);
                       </td>
                       <td>{op.quantityChange > 0 ? `+${op.quantityChange}` : op.quantityChange}</td>
                       <td>{op.availableQuantity}</td>
-                      <td>{op.operationType}</td>
+                      <td>
+                        <ExpandableCell text={op.operationType} maxWidth={120} />
+                      </td>
                       <td>
                         <ExpandableCell text={op.changeDescription ?? ''} maxWidth={150} />
                       </td>
-                      <td>{new Date(op.timestamp).toLocaleString()}</td>
+                    <td>
+                        <ExpandableCell
+                          text={new Date(op.timestamp).toLocaleString()}
+                          maxWidth={180}
+                        />
+                      </td>
                     </tr>
                   );
                 })}
