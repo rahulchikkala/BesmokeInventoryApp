@@ -24,7 +24,7 @@ const ProductInventory: React.FC<Props> = ({ highlightId, onHighlightDone }) => 
   const [products, setProducts] = useState<Product[]>([]);
   const [inventory, setInventory] = useState<InventoryStatus[]>([]);
   const [sortConfig, setSortConfig] = useState<
-    { key: 'name' | 'type' | 'size' | 'material' | 'available'; direction: 'asc' | 'desc' } | null
+    { key: 'id' | 'name' | 'type' | 'size' | 'material' | 'available'; direction: 'asc' | 'desc' } | null
   >(null);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
@@ -109,7 +109,7 @@ if (search) {
     }
   };
 
-  const handleSort = (key: 'name' | 'type' | 'size' | 'material' | 'available') => {
+  const handleSort = (key: 'id' | 'name' | 'type' | 'size' | 'material' | 'available') => {
     setSortConfig((prev) => {
       if (prev && prev.key === key) {
         return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
@@ -118,7 +118,7 @@ if (search) {
     });
   };
   const getSortIcon = (
-    key: 'name' | 'type' | 'size' | 'material' | 'available',
+    key: 'id' | 'name' | 'type' | 'size' | 'material' | 'available',
   ) => {
     if (!sortConfig || sortConfig.key !== key) return 'bi-chevron-expand';
     return sortConfig.direction === 'asc'
@@ -129,7 +129,8 @@ if (search) {
     setEditingProduct({ ...product, available: getQuantity(product.id) });
   };
 
-  const saveEdit = async () => {
+ const saveEdit = async (e: React.FormEvent) => {
+    e.preventDefault(); 
     if (!editingProduct) return;
    try {
       const { available, ...prod } = editingProduct;
@@ -208,7 +209,9 @@ if (search) {
               <table className="table table-striped table-hover table-bordered table-sm align-middle text-center slim-table">
                 <thead className="table-light sticky-top" style={{ top: 0 }}>
                   <tr>
-                    <th>ID</th>
+                    <th className="sortable" onClick={() => handleSort('id')}>
+                      ID <i className={`bi ${getSortIcon('id')}`}></i>
+                    </th>
                     <th className="sortable" onClick={() => handleSort('name')}>
                       Name <i className={`bi ${getSortIcon('name')}`}></i>
                     </th>
@@ -239,9 +242,15 @@ if (search) {
                       <td>
                         <ExpandableCell text={product.name} maxWidth={150} />
                       </td>
-                      <td>{product.type}</td>
-                      <td>{product.size}</td>
-                      <td>{product.material}</td>
+                      <td>
+                        <ExpandableCell text={product.type} maxWidth={120} />
+                      </td>
+                      <td>
+                        <ExpandableCell text={product.size} maxWidth={120} />
+                      </td>
+                      <td>
+                        <ExpandableCell text={product.material} maxWidth={120} />
+                      </td>
                       <td>{product.available}</td>
                       <td>
                         <button
@@ -341,8 +350,12 @@ if (search) {
 
       {editingProduct && (
         <>
-          <div className="modal fade show d-block" tabIndex={-1} style={{ zIndex: 1050 }}>
-            <div className="modal-dialog">
+         <div
+            className="modal fade show d-block"
+            tabIndex={-1}
+            style={{ zIndex: 1050 }}
+          >
+            <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content">
                 <div className="modal-header">
                   <h5 className="modal-title">Edit Product</h5>
@@ -352,74 +365,47 @@ if (search) {
                     onClick={() => setEditingProduct(null)}
                   ></button>
                 </div>
-                <div className="modal-body">
-                  <div className="mb-3">
-                    <label className="form-label">Name</label>
-                    <input
-                      className="form-control"
-                      value={editingProduct.name}
-                      onChange={(e) =>
-                        setEditingProduct({ ...editingProduct, name: e.target.value })
-                      }
-                    />
+               <form onSubmit={saveEdit}>
+                  <div className="modal-body">
+                    {(['name', 'type', 'size', 'material'] as const).map((field) => (
+                      <div className="mb-3" key={field}>
+                        <input
+                          className="form-control"
+                          value={editingProduct[field]}
+                          onChange={(e) =>
+                            setEditingProduct({ ...editingProduct, [field]: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                    ))}
+                    <div className="mb-3">
+                      <input
+                        className="form-control"
+                        type="number"
+                        value={editingProduct.available}
+                        onChange={(e) =>
+                          setEditingProduct({
+                            ...editingProduct,
+                            available: Number(e.target.value),
+                          })
+                        }
+                      />
+                    </div>
                   </div>
-                  <div className="mb-3">
-                    <label className="form-label">Type</label>
-                    <input
-                      className="form-control"
-                      value={editingProduct.type}
-                      onChange={(e) =>
-                        setEditingProduct({ ...editingProduct, type: e.target.value })
-                      }
-                    />
+                  <div className="modal-footer">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => setEditingProduct(null)}
+                    >
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-primary">
+                      Save
+                    </button>
                   </div>
-                  <div className="mb-3">
-                    <label className="form-label">Size</label>
-                    <input
-                      className="form-control"
-                      value={editingProduct.size}
-                      onChange={(e) =>
-                        setEditingProduct({ ...editingProduct, size: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Material</label>
-                    <input
-                      className="form-control"
-                      value={editingProduct.material}
-                      onChange={(e) =>
-                        setEditingProduct({ ...editingProduct, material: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Available</label>
-                    <input
-                      className="form-control"
-                      type="number"
-                      value={editingProduct.available}
-                      onChange={(e) =>
-                        setEditingProduct({
-                          ...editingProduct,
-                          available: Number(e.target.value),
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setEditingProduct(null)}
-                  >
-                    Cancel
-                  </button>
-                  <button className="btn btn-primary" onClick={saveEdit}>
-                    Save
-                  </button>
-                </div>
+                </form>
               </div>
             </div>
           </div>
@@ -429,8 +415,12 @@ if (search) {
 
       {deleteId !== null && (
         <>
-          <div className="modal fade show d-block" tabIndex={-1} style={{ zIndex: 1050 }}>
-            <div className="modal-dialog">
+          <div
+            className="modal fade show d-block"
+            tabIndex={-1}
+            style={{ zIndex: 1050 }}
+          >
+            <div className="modal-dialog modal-dialog-centered modal-sm">
               <div className="modal-content">
                 <div className="modal-header">
                   <h5 className="modal-title">Delete Product</h5>
@@ -451,7 +441,11 @@ if (search) {
                   >
                     Cancel
                   </button>
-                  <button className="btn btn-danger" onClick={confirmDelete}>
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={confirmDelete}
+                  >
                     Delete
                   </button>
                 </div>

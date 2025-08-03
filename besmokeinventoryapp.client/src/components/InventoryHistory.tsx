@@ -1,9 +1,4 @@
-﻿import React, {
-  useEffect,
-  useState,
-  useCallback,
-  useRef,
-} from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
 import { getPagedInventoryOperations, getInventoryOperations, getProducts } from '../services/ProductService';
 import type { InventoryOperation, Product, PagedQuery } from '../services/ProductService';
 import ExpandableCell from './ExpandableCell';
@@ -20,10 +15,7 @@ const InventoryHistory: React.FC = () => {
   const [timeFilter, setTimeFilter] = useState('all');
   const [message, setMessage] = useState<string | null>(null);
   const [pageInput, setPageInput] = useState('');
-  const headerRef = useRef<HTMLDivElement>(null);
-
-  // Remove headerHeight logic for simpler sticky header
-  // Bootstrap sticky-top will handle the table header
+  
 
   const getRange = useCallback(() => {
     const now = new Date();
@@ -200,27 +192,29 @@ const InventoryHistory: React.FC = () => {
 
   return (
     <>
-      <div className="card shadow-sm p-4 mt-4">
-        <div
-          ref={headerRef}
-          className="bg-white pb-2"
-          style={{ position: 'sticky', top: 0, zIndex: 2 }}
-        >
-          <h4 className="section-title text-primary">Inventory History</h4>
-          <div className="mb-2 d-flex gap-2">
-            <input
-              className="form-control"
-              placeholder="Search by product name or ID"
-              value={search}
-              onChange={e => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-            />
+      <div className="card shadow-sm mt-4">
+        <div className="card-header bg-white">
+          <div className="d-flex flex-wrap align-items-center gap-2">
+            <h4 className="section-title text-primary mb-0 flex-grow-1 text-center text-md-start">
+              Inventory History
+            </h4>
+            <div className="search-bar d-flex align-items-center">
+              <i className="bi bi-search"></i>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Search by product name or ID"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </div>
             <select
               className="form-select w-auto"
               value={timeFilter}
-              onChange={e => {
+              onChange={(e) => {
                 setTimeFilter(e.target.value);
                 setPage(1);
               }}
@@ -231,88 +225,144 @@ const InventoryHistory: React.FC = () => {
               <option value="7d">Last 7 Days</option>
               <option value="24d">Last 24 Days</option>
             </select>
-            <button className="btn btn-sm btn-primary" onClick={exportCsv}>Export CSV</button>
+            <button className="btn btn-sm btn-primary" onClick={exportCsv}>
+              Export CSV
+            </button>
           </div>
         </div>
 
-        <div className="table-responsive">
-          <table className="table table-striped table-hover table-bordered table-sm align-middle text-center slim-table">
-            <thead className="table-light sticky-top" style={{ top: 0, zIndex: 1 }}>
-              <tr>
-                <th className="sortable text-center" onClick={() => handleSort('id')}>
-                  ID <i className={`bi ${getSortIcon('id')}`}></i>
-                </th>
-                <th className="sortable text-center" onClick={() => handleSort('product')}>
-                  Product Name <i className={`bi ${getSortIcon('product')}`}></i>
-                </th>
-                <th className="sortable text-center" onClick={() => handleSort('productId')}>
-                  Product ID <i className={`bi ${getSortIcon('productId')}`}></i>
-                </th>
-                <th className="sortable text-center" onClick={() => handleSort('type')}>
-                  Product Type <i className={`bi ${getSortIcon('type')}`}></i>
-                </th>
-                <th className="sortable text-center" onClick={() => handleSort('size')}>
-                  Size <i className={`bi ${getSortIcon('size')}`}></i>
-                </th>
-                <th className="sortable text-center" onClick={() => handleSort('material')}>
-                  Material <i className={`bi ${getSortIcon('material')}`}></i>
-                </th>
-                <th className="sortable text-center" onClick={() => handleSort('change')}>
-                  Change <i className={`bi ${getSortIcon('change')}`}></i>
-                </th>
-                <th className="sortable text-center" onClick={() => handleSort('available')}>
-                  Available <i className={`bi ${getSortIcon('available')}`}></i>
-                </th>
-                <th className="text-center">Action</th>
-                <th className="text-center">Details</th>
-                <th className="sortable text-center" onClick={() => handleSort('timestamp')}>
-                  Timestamp <i className={`bi ${getSortIcon('timestamp')}`}></i>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedOps.map(op => {
-                const product = products.find(p => p.id === op.productId);
-                const name = product ? (op.productName !== product.name ? `${op.productName} (now ${product.name})` : op.productName) : op.productName;
-                const type = product ? (op.productType !== product.type ? `${op.productType} (now ${product.type})` : op.productType) : op.productType;
-                const size = product ? (op.size !== product.size ? `${op.size} (now ${product.size})` : op.size) : op.size;
-                const material = product ? (op.material !== product.material ? `${op.material} (now ${product.material})` : op.material) : op.material;
-                return (
-                  <tr key={op.id}>
-                    <td>{op.id}</td>
-                    <td><ExpandableCell text={name} maxWidth={150} /></td>
-                    <td>{op.productId}</td>
-                    <td><ExpandableCell text={type} maxWidth={120} /></td>
-                    <td><ExpandableCell text={size} maxWidth={120} /></td>
-                    <td><ExpandableCell text={material} maxWidth={120} /></td>
-                    <td>{op.quantityChange > 0 ? `+${op.quantityChange}` : op.quantityChange}</td>
-                    <td>{op.availableQuantity}</td>
-                    <td>{op.operationType}</td>
-                    <td><ExpandableCell text={op.changeDescription ?? ''} maxWidth={150} /></td>
-                    <td>{new Date(op.timestamp).toLocaleString()}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="card-body p-0">
+          <div className="table-responsive" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+            <table className="table table-striped table-hover table-bordered table-sm align-middle text-center slim-table">
+              <thead className="table-light sticky-top" style={{ top: 0 }}>
+                <tr>
+                  <th className="sortable text-center" onClick={() => handleSort('id')}>
+                    ID <i className={`bi ${getSortIcon('id')}`}></i>
+                  </th>
+                  <th className="sortable text-center" onClick={() => handleSort('product')}>
+                    Name <i className={`bi ${getSortIcon('product')}`}></i>
+                  </th>
+                  <th className="sortable text-center" onClick={() => handleSort('productId')}>
+                    Product ID <i className={`bi ${getSortIcon('productId')}`}></i>
+                  </th>
+                  <th className="sortable text-center" onClick={() => handleSort('type')}>
+                    Type <i className={`bi ${getSortIcon('type')}`}></i>
+                  </th>
+                  <th className="sortable text-center" onClick={() => handleSort('size')}>
+                    Size <i className={`bi ${getSortIcon('size')}`}></i>
+                  </th>
+                  <th className="sortable text-center" onClick={() => handleSort('material')}>
+                    Material <i className={`bi ${getSortIcon('material')}`}></i>
+                  </th>
+                  <th className="sortable text-center" onClick={() => handleSort('change')}>
+                    Change <i className={`bi ${getSortIcon('change')}`}></i>
+                  </th>
+                  <th className="sortable text-center" onClick={() => handleSort('available')}>
+                    Available <i className={`bi ${getSortIcon('available')}`}></i>
+                  </th>
+                  <th className="text-center">Action</th>
+                  <th className="text-center">Details</th>
+                  <th className="sortable text-center" onClick={() => handleSort('timestamp')}>
+                    Timestamp <i className={`bi ${getSortIcon('timestamp')}`}></i>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedOps.map((op) => {
+                  const product = products.find((p) => p.id === op.productId);
+                  const name = product
+                    ? op.productName !== product.name
+                      ? `${op.productName} (now ${product.name})`
+                      : op.productName
+                    : op.productName;
+                  const type = product
+                    ? op.productType !== product.type
+                      ? `${op.productType} (now ${product.type})`
+                      : op.productType
+                    : op.productType;
+                  const size = product
+                    ? op.size !== product.size
+                      ? `${op.size} (now ${product.size})`
+                      : op.size
+                    : op.size;
+                  const material = product
+                    ? op.material !== product.material
+                      ? `${op.material} (now ${product.material})`
+                      : op.material
+                    : op.material;
+                  return (
+                    <tr key={op.id}>
+                      <td>{op.id}</td>
+                      <td><ExpandableCell text={name} maxWidth={150} /></td>
+                      <td>{op.productId}</td>
+                      <td><ExpandableCell text={type} maxWidth={120} /></td>
+                      <td><ExpandableCell text={size} maxWidth={120} /></td>
+                      <td><ExpandableCell text={material} maxWidth={120} /></td>
+                      <td>{op.quantityChange > 0 ? `+${op.quantityChange}` : op.quantityChange}</td>
+                      <td>{op.availableQuantity}</td>
+                      <td>{op.operationType}</td>
+                      <td><ExpandableCell text={op.changeDescription ?? ''} maxWidth={150} /></td>
+                      <td>{new Date(op.timestamp).toLocaleString()}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div className="d-flex justify-content-center align-items-center gap-2 flex-wrap my-2">
-          <button className="btn btn-sm btn-outline-secondary" onClick={() => setPage(1)} disabled={page === 1}>First</button>
-          <button className="btn btn-sm btn-outline-secondary" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Previous</button>
-          <input type="number" min={1} max={totalPages} value={pageInput} onChange={e => setPageInput(e.target.value.replace(/\D/g, ''))} className="form-control form-control-sm w-auto" />
+        <div className="card-footer d-flex justify-content-center align-items-center gap-2 flex-wrap">
+          <button
+            className="btn btn-sm btn-outline-secondary"
+            onClick={() => setPage(1)}
+            disabled={page === 1}
+          >
+            First
+          </button>
+          <button
+            className="btn btn-sm btn-outline-secondary"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            Previous
+          </button>
+          <input
+            type="number"
+            min={1}
+            max={totalPages}
+            value={pageInput}
+            onChange={(e) => setPageInput(e.target.value.replace(/\D/g, ''))}
+            className="form-control form-control-sm w-auto"
+          />
           <span>Page {page} of {totalPages}</span>
-          <button className="btn btn-sm btn-outline-secondary" onClick={() => {
-            const p = Number(pageInput);
-            if (!pageInput || isNaN(p) || p < 1 || p > totalPages) {
-              setMessage('Page not found');
-            } else {
-              setPage(p);
-            }
-            setPageInput('');
-          }}>Go</button>
-          <button className="btn btn-sm btn-outline-secondary" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>Next</button>
-          <button className="btn btn-sm btn-outline-secondary" onClick={() => setPage(totalPages)} disabled={page >= totalPages}>Last</button>
+          <button
+            className="btn btn-sm btn-outline-secondary"
+            onClick={() => {
+              const p = Number(pageInput);
+              if (!pageInput || isNaN(p) || p < 1 || p > totalPages) {
+                setMessage('Page not found');
+              } else {
+                setPage(p);
+              }
+              setPageInput('');
+            }}
+          >
+            Go
+          </button>
+          <button
+            className="btn btn-sm btn-outline-secondary"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page >= totalPages}
+          >
+            Next
+          </button>
+          <button
+            className="btn btn-sm btn-outline-secondary"
+            onClick={() => setPage(totalPages)}
+            disabled={page >= totalPages}
+          >
+            Last
+          </button>
         </div>
       </div>
       {message && <div style={toastStyle}>{message}</div>}
