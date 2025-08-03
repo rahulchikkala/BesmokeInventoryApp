@@ -26,7 +26,7 @@ const [products, setProducts] = useState<Product[]>([]);
 
 
   return (
-   <div className="card shadow-sm mt-4">
+   <div className="card shadow-sm">
       <div className="card-header bg-white">
         <h4 className="section-title text-primary mb-0 text-center text-md-start">{title}</h4>
       </div>

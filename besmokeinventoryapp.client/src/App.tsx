@@ -14,7 +14,7 @@ function App() {
     setPage('inventory');
   };
   return (
-    <div className="container mt-4">
+    <div className="container-fluid p-0">
     <div className="sticky-top bg-white pb-2">
         <h1
           className="main-heading mb-4 d-flex justify-content-center align-items-center"

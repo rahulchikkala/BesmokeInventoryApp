@@ -192,7 +192,7 @@ const InventoryHistory: React.FC = () => {
 
   return (
     <>
-      <div className="card shadow-sm mt-4">
+      <div className="card shadow-sm">
         <div className="card-header bg-white">
           <div className="d-flex flex-wrap align-items-center gap-2">
             <h4 className="section-title text-primary mb-0 flex-grow-1 text-center text-md-start">

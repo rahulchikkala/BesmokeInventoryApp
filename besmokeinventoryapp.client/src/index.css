@@ -3,6 +3,7 @@ body {
     color: #212529;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     min-height: 100vh;
+    margin: 0;
 }
 
 .section-title {
